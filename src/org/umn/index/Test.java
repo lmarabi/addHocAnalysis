@@ -147,8 +147,8 @@ public class Test {
 	public static void main(String[] args) throws FileNotFoundException,
 			IOException, ParseException, InterruptedException {
 
-		//buildQuadTRee();
-		QueryQuadTree();
+		buildQuadTRee();
+		//QueryQuadTree();
 
 	}
 
