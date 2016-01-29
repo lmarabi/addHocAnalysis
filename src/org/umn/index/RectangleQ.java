@@ -1,6 +1,5 @@
-package org.umn.visualization;
+package org.umn.index;
 
-import java.awt.Graphics;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;

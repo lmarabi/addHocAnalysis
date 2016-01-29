@@ -1,4 +1,4 @@
-package org.umn.visualization;
+package org.umn.index;
 
 
 import java.io.DataInput;
@@ -6,14 +6,14 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.apache.hadoop.io.Text;
-
 
 
 
 public class PointQ implements Serializable,Comparable<PointQ>{
 	public double x;
 	public double y;
+	public String date;
+	public int value; 
 
 	public PointQ () {
 		this(0, 0);

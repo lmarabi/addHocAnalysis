@@ -1,4 +1,4 @@
-package org.umn.visualization;
+package org.umn.index;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
