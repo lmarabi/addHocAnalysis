@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 //import java.util.HashMap;
 
 public class QuadBucket implements Serializable{
@@ -18,9 +19,6 @@ public class QuadBucket implements Serializable{
 		// TODO Auto-generated constructor stub
 //		keywords = new HashMap<String, Integer>();
 		versionCount = new int[366];
-//		for (int j = 0; j < versionCount.length; j++) {
-//			versionCount[j] = 0;
-//		}
 	}
 	
 	/**

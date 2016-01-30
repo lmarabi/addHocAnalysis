@@ -28,8 +28,8 @@ public class Test {
 //			System.out.println("Could not load ");
 //		}
 		
-		File[] inputfiles = Convert.getOuputFiles(System
-				.getProperty("user.dir") + "/dataset/");
+		File[] inputfiles = Convert.getOuputFiles("/media/louai/My Book/Twitter_Data_2015/GeotaggedSample/");
+				//System.getProperty("user.dir") + "/dataset/");
 		//"/media/louai/My Book/Twitter_Data_2014/Twitter_Data/GeotaggedSample"
 //		for (int days = 0; days < 3; days++) {
 		for (int days = 0; days < inputfiles.length; days++) {			

@@ -83,6 +83,11 @@ public class HomeServer extends AbstractHandler {
 				quadtree.get(new RectangleQ(Double.parseDouble(minLong),Double.parseDouble(minLat)
 						, Double.parseDouble(maxLong),Double.parseDouble(maxLat))
 				,startDate,endDate,Integer.parseInt(level), result);
+				
+				quadtree.get(new RectangleQ(Double.parseDouble(minLong),Double.parseDouble(minLat)
+						, Double.parseDouble(maxLong),Double.parseDouble(maxLat))
+				,startDate,endDate,Integer.parseInt(level)+1, result);
+				
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
