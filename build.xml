@@ -7,9 +7,10 @@
 	<property name="dist.dir" location="dist" />
 	<property name="docs.dir" location="docs" />
 	<property name="lib.dir" location="lib" />
-	<property name="version" value="2" />
-        <property name="ant.build.javac.source" value="1.6" />
-        <property name="ant.build.javac.target" value="1.6" />
+	<property name="bin.dir" location="bin" />
+	<property name="version" value="1" />
+        <property name="ant.build.javac.source" value="1.7" />
+        <property name="ant.build.javac.target" value="1.7" />
        
         <property name="main.class" value="org.umn.index.Test" />
 	
@@ -29,15 +30,16 @@
 	<!-- Deletes the existing build, docs and dist directory-->
 	<target name="clean">
 		<delete dir="${build.dir}" />
-		<delete dir="${docs.dir}" />
+		<delete dir="${bin.dir}" />
 		<delete dir="${dist.dir}" />
+		<delete dir="${bin.dir}" />
 	</target>
 
 	<!-- Creates the  build, docs and dist directory-->
 	<target name="makedir">
 		<mkdir dir="${build.dir}" />
-		<mkdir dir="${docs.dir}" />
 		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${bin.dir}" />
 	</target>
 
 	<!-- Compiles the java code (including the usage of library for JUnit -->
