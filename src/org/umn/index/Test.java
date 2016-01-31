@@ -96,7 +96,7 @@ public class Test {
 			}
 		}
 
-		quadtree.StoreRectanglesWKT();
+		
 
 	
 		boolean stored = quadtree.storeQuadToDisk(quadfile);
@@ -104,6 +104,12 @@ public class Test {
 			System.out.println("Stored Successfully");
 		} else {
 			System.out.println("Error while Storing ");
+		}
+		
+		try{
+			quadtree.StoreRectanglesWKT();
+		}catch(Exception e){
+			System.err.println("Error Happend while export to WKT");
 		}
 
 	}
