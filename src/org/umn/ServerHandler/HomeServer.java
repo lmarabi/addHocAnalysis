@@ -7,12 +7,12 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.ArrayList;
 import java.util.zip.GZIPOutputStream;
 
-import javax.servlet.*;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.*;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -22,10 +22,6 @@ import org.umn.index.QuadTree;
 import org.umn.index.RectangleQ;
 
 import com.google.gson.stream.JsonWriter;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
 
 public class HomeServer extends AbstractHandler {
 	static QuadTree quadtree;

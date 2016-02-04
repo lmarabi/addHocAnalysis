@@ -309,8 +309,13 @@ public class QuadTree implements Serializable {
 			ois.close();
 			fis.close();
 		} catch (IOException e) {
+			System.err.println("Error IO while loading file "
+					+ e.getLocalizedMessage() + "\n**" + e.getMessage());
 			return false;
 		} catch (ClassNotFoundException e) {
+			System.err
+					.println("Error ClassNotFoundException while loading file "
+							+ e.getLocalizedMessage() + "\n**" + e.getMessage());
 			return false;
 		}
 		return true;

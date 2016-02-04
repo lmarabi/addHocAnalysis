@@ -145,6 +145,15 @@ public class Test {
 //			}else{
 //				System.out.println("problem occure when saving quadtree to disk");
 //			}
+			
+			
+			
+			try{
+				quadtree.StoreRectanglesWKT();
+			}catch(Exception e){
+				System.err.println("Error Happend while export to WKT");
+			}
+			
 		} else {
 			System.out.println("Could not load to memory");
 		}
