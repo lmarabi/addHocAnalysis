@@ -205,28 +205,34 @@ public class QuadTree implements Serializable {
 
 	}
 
-	private void printLeafNodes(QuadTree node, OutputStreamWriter writer)
+	private void printLeafNodes(QuadTree node, OutputStreamWriter writer, boolean isWKT)
 			throws IOException {
 		if (!node.hasChild) {
-			writer.write(toWKT(node.spaceMbr) + "\t" + node.level + "\t"
-					+ node.bucket.getTotalCount() + "\n");
+			if(isWKT){
+				writer.write(toWKT(node.spaceMbr) + "\t" + node.level + "\t"
+						+ node.bucket.getTotalCount() + "\n");
+			}else{
+				
+				writer.write(", new RectangleQ("+node.spaceMbr.toString()+")");
+			}
+			
 			// System.out.println(counter + "\t" + node.spaceMbr.toString());
 		} else {
-			printLeafNodes(node.SW, writer);
-			printLeafNodes(node.NW, writer);
-			printLeafNodes(node.NE, writer);
-			printLeafNodes(node.SE, writer);
+			printLeafNodes(node.SW, writer,isWKT);
+			printLeafNodes(node.NW, writer,isWKT);
+			printLeafNodes(node.NE, writer,isWKT);
+			printLeafNodes(node.SE, writer,isWKT);
 		}
 	}
 
-	private void printAllNodes(QuadTree node, OutputStreamWriter writer)
+	private void printAllNodes(QuadTree node, OutputStreamWriter writer, boolean isWKT)
 			throws IOException {
 		writer.write(toWKT(node.spaceMbr) + "\n");
 		// System.out.println(counter + "\t" + node.spaceMbr.toString());
-		printLeafNodes(node.SW, writer);
-		printLeafNodes(node.NW, writer);
-		printLeafNodes(node.NE, writer);
-		printLeafNodes(node.SE, writer);
+		printLeafNodes(node.SW, writer,isWKT);
+		printLeafNodes(node.NW, writer,isWKT);
+		printLeafNodes(node.NE, writer,isWKT);
+		printLeafNodes(node.SE, writer,isWKT);
 	}
 
 	/**
@@ -238,11 +244,11 @@ public class QuadTree implements Serializable {
 	public void removeStatistics() {
 		if (!this.hasChild) {
 			// clear statistics of this node.
-			this.bucket = new QuadBucket();
+			//this.bucket = new QuadBucket();
 			this.elements.clear();
 			this.fixed = true;
 		} else {
-			this.bucket = new QuadBucket();
+			//this.bucket = new QuadBucket();
 			this.elements.clear();
 			this.fixed = true;
 			this.SE.removeStatistics();
@@ -330,7 +336,24 @@ public class QuadTree implements Serializable {
 						+ "/viso_quad.WKT", false), "UTF-8");
 		// printAllNodes(this);
 		writer.write("Id\tMBR\tDepth\tCounts\n");
-		printLeafNodes(this, writer);
+		printLeafNodes(this, writer,true);
+		writer.close();
+		// System.out.println("number of buckets in the leaves:"+counter+
+		// "estimated Size = "+((1.47*counter)/1024)+" MB");
+	}
+	
+	
+	public void StoreRectanglesToArrayText() throws IOException {
+		// for (int i = 0; i < LevelNumbers; i++) {
+		// this.insert(1);
+		// }
+		OutputStreamWriter writer = new OutputStreamWriter(
+				new FileOutputStream(System.getProperty("user.dir")
+						+ "/quadtree_mbrs.txt", false), "UTF-8");
+		// printAllNodes(this);
+		writer.write("{");
+		printLeafNodes(this, writer,false);
+		writer.write("}");
 		writer.close();
 		// System.out.println("number of buckets in the leaves:"+counter+
 		// "estimated Size = "+((1.47*counter)/1024)+" MB");

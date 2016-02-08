@@ -16,10 +16,10 @@ import org.umn.twitter.Convert;
 
 public class Test {
 
-	public static void buildQuadTRee() throws FileNotFoundException,
+	public static void buildQuadTRee(String path) throws FileNotFoundException,
 			IOException, ParseException, InterruptedException {
 		QuadTree quadtree = new QuadTree(new RectangleQ(-180, -90, 180, 90),
-				20);
+				5);
 		File quadfile = new File(System.getProperty("user.dir") + "/quadtree.dat");
 //		boolean loadQuadToMemory = quadtree.loadQuadToMemory(quadfile);
 //		if (loadQuadToMemory) {
@@ -27,8 +27,13 @@ public class Test {
 //		}else{
 //			System.out.println("Could not load ");
 //		}
-		
-		File[] inputfiles = Convert.getOuputFiles("/media/louai/My Book/Twitter_Data_2015/GeotaggedSample/");
+		File dataFolder = new File(path);
+		if(!dataFolder.exists()){
+			System.out.println("Data folder doesn't exist");
+			return;
+		}
+		File[] inputfiles = Convert.getOuputFiles(path);
+		//"/media/louai/My Book/Twitter_Data_2015/GeotaggedSample/"
 				//System.getProperty("user.dir") + "/dataset/");
 		//"/media/louai/My Book/Twitter_Data_2014/Twitter_Data/GeotaggedSample"
 //		for (int days = 0; days < 3; days++) {
@@ -108,6 +113,7 @@ public class Test {
 		
 		try{
 			quadtree.StoreRectanglesWKT();
+			quadtree.StoreRectanglesToArrayText();
 		}catch(Exception e){
 			System.err.println("Error Happend while export to WKT");
 		}
@@ -161,8 +167,9 @@ public class Test {
 
 	public static void main(String[] args) throws FileNotFoundException,
 			IOException, ParseException, InterruptedException {
-
-		buildQuadTRee();
+		String path = args[0];
+		buildQuadTRee(path);
+		System.out.println("execute query start");
 		//QueryQuadTree();
 
 	}
