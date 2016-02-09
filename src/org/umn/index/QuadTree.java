@@ -213,7 +213,8 @@ public class QuadTree implements Serializable {
 						+ node.bucket.getTotalCount() + "\n");
 			}else{
 				
-				writer.write(", new RectangleQ("+node.spaceMbr.toString()+")");
+				//writer.write(", new RectangleQ("+node.spaceMbr.toString()+")");
+				writer.write(node.spaceMbr.x1+","+node.spaceMbr.y1+","+node.spaceMbr.x2+","+node.spaceMbr.y2+"\n");
 			}
 			
 			// System.out.println(counter + "\t" + node.spaceMbr.toString());
@@ -351,9 +352,9 @@ public class QuadTree implements Serializable {
 				new FileOutputStream(System.getProperty("user.dir")
 						+ "/quadtree_mbrs.txt", false), "UTF-8");
 		// printAllNodes(this);
-		writer.write("{");
+		//writer.write("{");
 		printLeafNodes(this, writer,false);
-		writer.write("}");
+		//writer.write("}");
 		writer.close();
 		// System.out.println("number of buckets in the leaves:"+counter+
 		// "estimated Size = "+((1.47*counter)/1024)+" MB");

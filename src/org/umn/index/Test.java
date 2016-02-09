@@ -57,7 +57,7 @@ public class Test {
 					BufferedReader br = null;
 
 					try {
-						if (!fileName.contains(".gzip")) {
+						if (!fileName.contains(".gzip") || !fileName.contains(".gz")) {
 							br = new BufferedReader(new FileReader(fileName));
 						} else {
 							// This is extecuted if the dataset is compressed
@@ -114,6 +114,7 @@ public class Test {
 		try{
 			quadtree.StoreRectanglesWKT();
 			quadtree.StoreRectanglesToArrayText();
+			quadtree.removeStatistics();
 		}catch(Exception e){
 			System.err.println("Error Happend while export to WKT");
 		}
@@ -126,6 +127,9 @@ public class Test {
 		File file = new File(System.getProperty("user.dir") + "/quadtree.dat");
 		boolean loadQuadToMemory = quadtree.loadQuadToMemory(file);
 		if (loadQuadToMemory) {
+			quadtree.removeStatistics();
+			quadtree.StoreRectanglesToArrayText();
+			quadtree.storeQuadToDisk(file);
 			System.out.println("loaded to memory successfully");
 			long startTime, endTime,queryExec_time;
 			startTime = System.currentTimeMillis();
@@ -153,13 +157,6 @@ public class Test {
 //			}
 			
 			
-			
-			try{
-				quadtree.StoreRectanglesWKT();
-			}catch(Exception e){
-				System.err.println("Error Happend while export to WKT");
-			}
-			
 		} else {
 			System.out.println("Could not load to memory");
 		}
@@ -167,10 +164,10 @@ public class Test {
 
 	public static void main(String[] args) throws FileNotFoundException,
 			IOException, ParseException, InterruptedException {
-		String path = args[0];
-		buildQuadTRee(path);
+		//String path = args[0];
+		//buildQuadTRee(path);
 		System.out.println("execute query start");
-		//QueryQuadTree();
+		QueryQuadTree();
 
 	}
 
