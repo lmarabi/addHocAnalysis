@@ -246,11 +246,11 @@ public class QuadTree implements Serializable {
 		if (!this.hasChild) {
 			// clear statistics of this node.
 			//this.bucket = new QuadBucket();
-			this.elements.clear();
+			this.elements = null;
 			this.fixed = true;
 		} else {
 			//this.bucket = new QuadBucket();
-			this.elements.clear();
+			this.elements = null;
 			this.fixed = true;
 			this.SE.removeStatistics();
 			this.NE.removeStatistics();

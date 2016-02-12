@@ -69,8 +69,8 @@ public class HomeServer extends AbstractHandler {
 			String level = baseRequest.getParameter("level");//min_lat
 //			String startDate = baseRequest.getParameter("startDate");
 //			String endDate = baseRequest.getParameter("endDate");
-			String startDate = "2014-12-27";
-			String endDate = "2014-12-31";
+			String startDate = "2015-01-01";
+			String endDate = "2015-12-31";
 			
 			long startTime, endTime,queryExec_time;
 			startTime = System.currentTimeMillis();
