@@ -4,16 +4,43 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.umn.index.RectangleQ;
 
 public class keywordSearch {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		RectangleQ[] mbr = { new RectangleQ(-180, -90, 180, 90) };
-		keywordSearch.match(mbr, "king");
+		RectangleQ mbr = new RectangleQ(-0.0054931640625,5.65521240234375,0.0,5.657958984375);
+//		keywordSearch.match(mbr, "king");
+		//invertedIndexConstruction();
+		searchKeyQ(mbr,"lfc",true);
+		
+		//LuceneInvertedIndex.buildIndex(null, true);
+		
 
+	}
+	
+	public static void invertedIndexConstruction() throws Exception{
+		InvertedIndex.build(null);
+	}
+	
+	public static void searchKeyQ(RectangleQ mbr , String keywords,boolean lucene) throws Exception{
+		
+		HashMap<RectangleQ,Integer> temp;
+		if(!lucene){
+		temp = InvertedIndex.searchKeyword(keywords, mbr);
+		}else{
+			temp = LuceneInvertedIndex.searchKeyword(keywords, mbr);
+		}
+		Iterator it = temp.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry pair = (Map.Entry)it.next();
+	        System.out.println(pair.getKey() + " = " + pair.getValue());
+		}
 	}
 
 	/**
