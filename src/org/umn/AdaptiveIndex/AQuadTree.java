@@ -363,7 +363,7 @@ public class AQuadTree implements Serializable {
 		// this.insert(1);
 		// }
 		OutputStreamWriter writer = new OutputStreamWriter(
-				new FileOutputStream(System.getProperty("user.dir") + "/../dataset/addHoc/viso_quad.WKT", false), "UTF-8");
+				new FileOutputStream(System.getProperty("user.dir") + "/../dataset/addHoc/AQuadtree.WKT", false), "UTF-8");
 		// printAllNodes(this);
 		writer.write("Id\tMBR\tDepth\tCounts\n");
 		printLeafNodes(this, writer, true);
@@ -377,7 +377,7 @@ public class AQuadTree implements Serializable {
 		// this.insert(1);
 		// }
 		OutputStreamWriter writer = new OutputStreamWriter(
-				new FileOutputStream(System.getProperty("user.dir") + "/../dataset/addHoc/quadtree_mbrs.txt", false), "UTF-8");
+				new FileOutputStream(System.getProperty("user.dir") + "/../dataset/addHoc/AQuadtree_mbrs.txt", false), "UTF-8");
 		// printAllNodes(this);
 		// writer.write("{");
 		printLeafNodes(this, writer, false);
@@ -389,7 +389,7 @@ public class AQuadTree implements Serializable {
 
 	public static void main(String[] args) throws IOException, ParseException {
 		AQuadTree tree = new AQuadTree(new RectangleQ(-180, -90, 180, 90), null);
-		File quadfile = new File(System.getProperty("user.dir") + "/../dataset/addHoc/quadtree.dat");
+		File quadfile = new File(System.getProperty("user.dir") + "/../dataset/addHoc/AQuadtree.dat");
 		File data = new File(System.getProperty("user.dir") + "/../dataset/addHoc/dataset/mbrs/part-r-00000");
 		if(!data.exists()){
 			System.out.println("Data folder doesn't exist");
