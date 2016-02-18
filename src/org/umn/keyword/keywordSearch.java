@@ -14,18 +14,32 @@ public class keywordSearch {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		RectangleQ mbr = new RectangleQ(-0.0054931640625,5.65521240234375,0.0,5.657958984375);
+		RectangleQ mbr = new RectangleQ(-61.3336181640625,89.173583984375,-16.328125,54.17633056640625);
 //		keywordSearch.match(mbr, "king");
-		//invertedIndexConstruction();
-		searchKeyQ(mbr,"lfc",true);
+
+		//searchKeyQ(mbr,"lfc",true);
 		
 		//LuceneInvertedIndex.buildIndex(null, true);
+		
+		
+		
+//		invertedIndexConstruction();
+		invertedIndexSearch(mbr, "lfc");
 		
 
 	}
 	
 	public static void invertedIndexConstruction() throws Exception{
 		InvertedIndex.build(null);
+	}
+	
+	public static void invertedIndexSearch(RectangleQ mbr, String keywords) throws Exception{
+		HashMap<RectangleQ,Integer> temp = InvertedIndex.searchKeyword(keywords, mbr);
+		Iterator it = temp.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry pair = (Map.Entry)it.next();
+	        System.out.println(pair.getKey() + " = " + pair.getValue());
+		}
 	}
 	
 	public static void searchKeyQ(RectangleQ mbr , String keywords,boolean lucene) throws Exception{
@@ -55,7 +69,7 @@ public class keywordSearch {
 			throws IOException {
 		int[] count = new int[mbr.length];
 		String fileName = System.getProperty("user.dir")
-				+ "/dataset/part-r-00000";
+				+ "/../dataset/addHoc/dataset/part-r-00000";
 		BufferedReader br = new BufferedReader(new InputStreamReader(
 				(new FileInputStream(fileName))));
 		String line;

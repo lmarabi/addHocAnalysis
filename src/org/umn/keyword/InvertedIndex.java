@@ -36,7 +36,7 @@ public class InvertedIndex implements Serializable {
 		/////////////
 		HashMap<RectangleQ,Integer> result = new HashMap<RectangleQ, Integer>();
 		String fileName = System.getProperty("user.dir")
-				+ "/dataset/quadtree_mbrs.txt";
+				+ "/../dataset/addHoc/dataset/quadtree_mbrs.txt";
 		BufferedReader br = new BufferedReader(new InputStreamReader(
 				(new FileInputStream(fileName))));
 		String line;
@@ -121,7 +121,7 @@ public class InvertedIndex implements Serializable {
 			}
 			fos = new FileOutputStream(new File(System.getProperty("user.dir")
 					+ "/inverted/" + mbr.x1 + "," + mbr.y1 + "," + mbr.x2 + ","
-					+ mbr.y2));
+					+ mbr.y2),true);
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
 			oos.writeObject(keywords);
 			oos.close();
@@ -144,10 +144,13 @@ public class InvertedIndex implements Serializable {
 
 		try {
 			FileInputStream fis = new FileInputStream(new File(
-					System.getProperty("user.dir") + "/inverted/" + mbr.x1
-							+ "," + mbr.y1 + "," + mbr.x2 + "," + mbr.y2));
+					System.getProperty("user.dir")
+					+ "/inverted/" + mbr.x1 + "," + mbr.y1 + "," + mbr.x2 + ","
+					+ mbr.y2));
 			ObjectInputStream ois = new ObjectInputStream(fis);
 			this.keywords = (HashMap<String, Integer>) ois.readObject();
+			ois.close();
+			fis.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;

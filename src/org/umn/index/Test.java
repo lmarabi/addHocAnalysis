@@ -20,7 +20,7 @@ public class Test {
 			IOException, ParseException, InterruptedException {
 		QuadTree quadtree = new QuadTree(new RectangleQ(-180, -90, 180, 90),
 				5);
-		File quadfile = new File(System.getProperty("user.dir") + "/quadtree.dat");
+		File quadfile = new File(System.getProperty("user.dir") + "/../dataset/addHoc/quadtree.dat");
 //		boolean loadQuadToMemory = quadtree.loadQuadToMemory(quadfile);
 //		if (loadQuadToMemory) {
 //			System.out.println("loaded to memory successfully");
@@ -124,7 +124,7 @@ public class Test {
 	public static void QueryQuadTree() throws IOException, ParseException {
 		QuadTree quadtree = new QuadTree(new RectangleQ(-180, -90, 180, 90),
 				1000);
-		File file = new File(System.getProperty("user.dir") + "/quadtree.dat");
+		File file = new File(System.getProperty("user.dir") + "../dataset/addHoc/quadtree.dat");
 		boolean loadQuadToMemory = quadtree.loadQuadToMemory(file);
 		if (loadQuadToMemory) {
 			quadtree.removeStatistics();
