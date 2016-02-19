@@ -7,18 +7,27 @@ import java.util.Calendar;
 import java.util.HashMap;
 //import java.util.HashMap;
 
-public class AQuadBucket implements Serializable{
-	static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
+
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.PriorityQueue;
+
+import org.umn.index.RectangleQ;
+import org.umn.keyword.InvertedIndex;
+
+public class AQuadBucket implements Serializable{
 	//Hash keywords
-	private HashMap<String, Integer>[] keywordsCount;
+	private AQPriorityQueue[] keywordsCount;
 	// cardinality 
 	private int[] versionCount; 
 	
 	public AQuadBucket() {
 		// TODO Auto-generated constructor stub
-		HashMap<String, Integer>[] hashMaps = (HashMap<String, Integer>[]) new HashMap<?,?>[366];
-		keywordsCount =  hashMaps;
+		//HashMap<String, Integer>[] hashMaps = (HashMap<String, Integer>[]) new HashMap<?,?>[366];
+		keywordsCount = new AQPriorityQueue[366];
 		versionCount = new int[366];
 	}
 	
@@ -45,31 +54,56 @@ public class AQuadBucket implements Serializable{
 	 * @param todate
 	 * @param word
 	 * @return 0 if doesn't exist , otherwise return >  0
-	 * @throws ParseException
+	 * @throws Exception 
 	 */
-	public int getKeywordCount(String fromdate, String todate,String word) throws ParseException{
+	public int getKeywordCount(String fromdate, String todate,String word,AQuadTree node) throws Exception{
 		int result = 0; 
+		int count = 0;
 		int from = this.getDayYearNumber(fromdate);
 		int to = this.getDayYearNumber(todate);
 		for(int i = from; i<=to;i++){
-			if(keywordsCount[i].containsKey(word)){
-				result += keywordsCount[i].get(word);
+			if(keywordsCount[i].contains(word)){
+				AQkeywords temp = keywordsCount[i].getEntry(word); 
+				result += temp != null ? temp.count: 0;
+			}else{
+				//keyword doesn't exist in the AQtree , need to be query from the inverted index and then updates all leaves nodes.
+				HashMap<RectangleQ,Integer> keyvalue = InvertedIndex.searchKeyword(word, node.spaceMbr, i);
+				//update the sum of these recatngles to this buckets 
+				Iterator<Entry<RectangleQ, Integer>> it = keyvalue.entrySet().iterator();
+				while(it.hasNext()){
+					Map.Entry<RectangleQ,Integer> entry = it.next();
+					node.InsertKeywords(word, entry.getKey(), i, entry.getValue());
+					count +=  entry.getValue();
+				}
+				result = count; 
 			}
 		}
 		return result;
 	}
 	
-	
-	public void setVersionCount(String day, int count) throws ParseException {
-		this.versionCount[getDayYearNumber(day)] += count;
-	}
+
 	
 	public void incrementtVersionCount(String day,int count ) throws ParseException {
 		this.versionCount[getDayYearNumber(day)] += count;
 	}
 	
-	public void setVersionKeywords(String day, String keyword, int count) throws ParseException{
-		this.keywordsCount[getDayYearNumber(day)].put(keyword, count);
+	public void setVersionKeywords(int day, String keyword, int count, boolean hasChild) throws ParseException{
+		if(!this.keywordsCount[day].contains(keyword)){
+			if(this.keywordsCount[day].size() > 20){
+				this.keywordsCount[day].poll();
+			}
+			this.keywordsCount[day].add(new AQkeywords(keyword, count, 1));
+		}else{
+			if(hasChild){
+				AQkeywords temp = keywordsCount[day].getEntry(keyword);
+				keywordsCount[day].remove(temp);
+				temp.count += count;
+				keywordsCount[day].add(temp);
+			}else{
+				//do nothing as they are already inserted in the first outer if statement
+			}
+		}
+		
 	}
 	
 	
@@ -82,6 +116,7 @@ public class AQuadBucket implements Serializable{
 	}
 	
 	private int getDayYearNumber(String day) throws ParseException{
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(dateFormat.parse(day)); // Give your own date
 		return (cal.get(Calendar.DAY_OF_YEAR) -1);

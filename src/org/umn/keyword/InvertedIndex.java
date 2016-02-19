@@ -10,12 +10,16 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.umn.conf.Common;
 import org.umn.index.RectangleQ;
 
 public class InvertedIndex implements Serializable {
@@ -30,15 +34,16 @@ public class InvertedIndex implements Serializable {
 	 * 
 	 * @param keyword
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public static HashMap<RectangleQ,Integer> searchKeyword(String keyword,RectangleQ queryMbr) throws Exception {
-		/////////////
-		HashMap<RectangleQ,Integer> result = new HashMap<RectangleQ, Integer>();
-		String fileName = System.getProperty("user.dir")
-				+ "/../dataset/addHoc/dataset/quadtree_mbrs.txt";
+	public static HashMap<RectangleQ, Integer> searchKeyword(String keyword,
+			RectangleQ queryMbr, int dayofYear) throws Exception {
+		// ///////////
+		HashMap<RectangleQ, Integer> result = new HashMap<RectangleQ, Integer>();
+		Common conf = new Common();
+		conf.loadConfigFile();
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				(new FileInputStream(fileName))));
+				(new FileInputStream(conf.quadtree_mbrFile))));
 		String line;
 		RectangleQ test = null;
 		int count = 0;
@@ -48,35 +53,29 @@ public class InvertedIndex implements Serializable {
 			test = new RectangleQ(Double.parseDouble(xy[0]),
 					Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
 					Double.parseDouble(xy[3]));
-			if(queryMbr.isIntersected(test)){
+			if (queryMbr.isIntersected(test)) {
 				InvertedIndex index = new InvertedIndex();
-				index.ReadFromDisk(test);
-				if(index.keywords.containsKey(keyword)){
+				index.ReadFromDisk(test, dayofYear, conf.invertedIndexDir);
+				if (index.keywords.containsKey(keyword)) {
 					result.put(test, index.keywords.get(keyword));
 				}
 			}
 		}
-		/////////////
+		// ///////////
 		return result;
 	}
 
 	/**
 	 * This method takes an input and then Build the inverted index.
 	 * 
-	 * @param file
+	 * @param inputFile
 	 * @return
 	 * @throws Exception
 	 */
-	public static boolean build(String file) throws Exception {
-		String fileName = "";
-		if (file == null) {
-			fileName = System.getProperty("user.dir") + "/dataset/part-r-00000";
-		} else {
-			fileName = file;
-		}
-
+	public static boolean build(String inputFile, String outputdir)
+			throws Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				(new FileInputStream(fileName))));
+				(new FileInputStream(inputFile))));
 		String line;
 		RectangleQ mbr = null;
 		long start = System.currentTimeMillis();
@@ -86,6 +85,7 @@ public class InvertedIndex implements Serializable {
 					Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
 					Double.parseDouble(xy[3]));
 			String[] list = line.split("\t");
+			String time = list[1];
 			InvertedIndex index = new InvertedIndex();
 			for (int j = 2; j < list.length; j++) {
 				String[] keyvalue = list[j].split(",");
@@ -96,7 +96,7 @@ public class InvertedIndex implements Serializable {
 
 				}
 			}
-			index.storeToDisk(mbr);
+			index.storeToDisk(outputdir, mbr, getDayYearNumber(time));
 		}
 		long end = System.currentTimeMillis();
 		System.out.println("Execution time for Building index in ms:"
@@ -105,23 +105,30 @@ public class InvertedIndex implements Serializable {
 		return true;
 	}
 
+	private static int getDayYearNumber(String day) throws ParseException {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(dateFormat.parse(day)); // Give your own date
+		return (cal.get(Calendar.DAY_OF_YEAR) - 1);
+	}
+
 	/**
 	 * This method stores an inverted index to the disk
 	 * 
 	 * @param mbr
 	 * @return
+	 * @throws ParseException
 	 */
-	public boolean storeToDisk(RectangleQ mbr) {
+	public boolean storeToDisk(String outputdir, RectangleQ mbr, int dayofYear) {
 		FileOutputStream fos;
 		try {
-			File folder = new File(System.getProperty("user.dir")
-					+ "/inverted/");
+			File folder = new File(outputdir + "/inverted/");
 			if (!folder.exists()) {
 				folder.mkdir();
 			}
-			fos = new FileOutputStream(new File(System.getProperty("user.dir")
-					+ "/inverted/" + mbr.x1 + "," + mbr.y1 + "," + mbr.x2 + ","
-					+ mbr.y2),true);
+			fos = new FileOutputStream(new File(outputdir + "/inverted/"
+					+ dayofYear + "=" + +mbr.x1 + "," + mbr.y1 + "," + mbr.x2
+					+ "," + mbr.y2), true);
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
 			oos.writeObject(keywords);
 			oos.close();
@@ -140,13 +147,12 @@ public class InvertedIndex implements Serializable {
 	 * @param mbr
 	 * @return
 	 */
-	public boolean ReadFromDisk(RectangleQ mbr) {
+	public boolean ReadFromDisk(RectangleQ mbr, int dayofYear, String outputdir) {
 
 		try {
-			FileInputStream fis = new FileInputStream(new File(
-					System.getProperty("user.dir")
-					+ "/inverted/" + mbr.x1 + "," + mbr.y1 + "," + mbr.x2 + ","
-					+ mbr.y2));
+			FileInputStream fis = new FileInputStream(new File(outputdir
+					+ "/inverted/" + dayofYear + "=" + mbr.x1 + "," + mbr.y1
+					+ "," + mbr.x2 + "," + mbr.y2));
 			ObjectInputStream ois = new ObjectInputStream(fis);
 			this.keywords = (HashMap<String, Integer>) ois.readObject();
 			ois.close();

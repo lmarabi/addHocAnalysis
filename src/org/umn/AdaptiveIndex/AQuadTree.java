@@ -1,25 +1,18 @@
 package org.umn.AdaptiveIndex;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.io.Serializable;
 
 import org.umn.index.PointQ;
-import org.umn.index.QuadBucket;
 import org.umn.index.RectangleQ;
-import org.umn.keyword.InvertedIndex;
 
 /***
  * This class Build the quadtree after the hadoop analysis phase. The
@@ -74,6 +67,35 @@ public class AQuadTree implements Serializable {
 		this.SE.level = this.level + 1;
 	}
 
+	/***
+	 * This method should update the list of keywords
+	 * 
+	 * @param node
+	 * @param mapLevel
+	 * @throws ParseException 
+	 */
+	public void InsertKeywords(String keyword, RectangleQ mbr,int day,int count) throws ParseException {
+		// check if there is a child or not before insert
+				// First case if node doesn't have child
+				if (!this.spaceMbr.isIntersected(mbr))
+					return;
+				if (!this.hasChild) {
+					this.bucket.setVersionKeywords(day, keyword, count, this.hasChild);
+				}
+				/*
+				 * Else Case if the node has child we need to trace the place where the
+				 * point belong to
+				 */
+				else {
+					this.bucket.setVersionKeywords(day, keyword, count, this.hasChild);
+					this.SW.InsertKeywords( keyword,  mbr, day, count);
+					this.NW.InsertKeywords( keyword,  mbr, day, count);
+					this.NE.InsertKeywords( keyword,  mbr, day, count);
+					this.SE.InsertKeywords( keyword,  mbr, day, count);
+				}
+
+	}
+	
 	/**
 	 * Insert an object into this tree
 	 * 
@@ -136,18 +158,7 @@ public class AQuadTree implements Serializable {
 
 	}
 
-//	/***
-//	 * This method should update the list of keywords
-//	 * 
-//	 * @param node
-//	 * @param mapLevel
-//	 */
-//	public void adaptiveUpdate(AQuadTree node, int mapLevel) {
-//		if (node.level <= mapLevel) {
-//
-//		}
-//
-//	}
+	
 	
 
 	/**
@@ -169,18 +180,7 @@ public class AQuadTree implements Serializable {
 				p.value = this.bucket.getVersionCount(fromDate, toDate);
 			} else {
 				p.value = this.bucket.getKeywordCount(fromDate, toDate,
-						keywords);
-				if (p.value == 0) {
-					// Need to query form the inverted index and update the
-					// quadtree.
-//					HashMap<RectangleQ,Integer> mbrKeywordCount = InvertedIndex.searchKeyword(keywords, this.spaceMbr);
-//					Iterator it = mbrKeywordCount.entrySet().iterator();
-//					while(it.hasNext()){
-//						Map.Entry<RectangleQ,Integer> pair = (Map.Entry<RectangleQ,Integer>)it.next();
-//				        System.out.println(pair.getKey().getCenterPoint() + " = " + pair.getValue()); 
-//					}
-					
-				}
+						keywords,this);
 			}//end if there is a keywords 
 			values.add(p);
 		} else if (this.hasChild) {
@@ -211,19 +211,6 @@ public class AQuadTree implements Serializable {
 		return values;
 	}
 
-	// public void aggregateStatistics(QuadTree node){
-	// if(!node.hasChild){
-	// if(node.elements.size() >0){
-	//
-	// }
-	// }else{// node has children
-	// List<VisoBucket> temp = new ArrayList<VisoBucket>();
-	// int[] aggregate = new int[365];
-	// for(int i =0; i< 365;i++){
-	// node.SE
-	// }
-	// }
-	// }
 
 	/**
 	 * This method redistribute the points between the 4 new quadrant child
@@ -303,8 +290,9 @@ public class AQuadTree implements Serializable {
 	 * 
 	 * @throws IOException
 	 */
-	public boolean storeQuadToDisk(File f) throws IOException {
+	public boolean storeQuadToDisk(String outputDir) throws IOException {
 		try {
+			File f = new File(outputDir+"/AQuadtree.dat");
 			FileOutputStream fos = new FileOutputStream(f);
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
 			oos.writeObject(spaceMbr);
@@ -329,8 +317,9 @@ public class AQuadTree implements Serializable {
 	/**
 	 * Restore quad tree to memory
 	 */
-	public boolean loadQuadToMemory(File f) {
+	public boolean loadQuadToMemory(String outputDir) {
 		try {
+			File f = new File(outputDir+"/AQuadtree.dat");
 			FileInputStream fis = new FileInputStream(f);
 			ObjectInputStream ois = new ObjectInputStream(fis);
 			this.spaceMbr = (RectangleQ) ois.readObject();
@@ -358,12 +347,12 @@ public class AQuadTree implements Serializable {
 		return true;
 	}
 
-	public void StoreRectanglesWKT() throws IOException {
+	public void StoreRectanglesWKT(String outputdir) throws IOException {
 		// for (int i = 0; i < LevelNumbers; i++) {
 		// this.insert(1);
 		// }
 		OutputStreamWriter writer = new OutputStreamWriter(
-				new FileOutputStream(System.getProperty("user.dir") + "/../dataset/addHoc/AQuadtree.WKT", false), "UTF-8");
+				new FileOutputStream(outputdir+"/AQuadtree.WKT", false), "UTF-8");
 		// printAllNodes(this);
 		writer.write("Id\tMBR\tDepth\tCounts\n");
 		printLeafNodes(this, writer, true);
@@ -372,12 +361,12 @@ public class AQuadTree implements Serializable {
 		// "estimated Size = "+((1.47*counter)/1024)+" MB");
 	}
 
-	public void StoreRectanglesToArrayText() throws IOException {
+	public void StoreRectanglesToArrayText(String outputdir) throws IOException {
 		// for (int i = 0; i < LevelNumbers; i++) {
 		// this.insert(1);
 		// }
 		OutputStreamWriter writer = new OutputStreamWriter(
-				new FileOutputStream(System.getProperty("user.dir") + "/../dataset/addHoc/AQuadtree_mbrs.txt", false), "UTF-8");
+				new FileOutputStream(outputdir+"/AQuadtree_mbrs.txt", false), "UTF-8");
 		// printAllNodes(this);
 		// writer.write("{");
 		printLeafNodes(this, writer, false);
@@ -387,51 +376,5 @@ public class AQuadTree implements Serializable {
 		// "estimated Size = "+((1.47*counter)/1024)+" MB");
 	}
 
-	public static void main(String[] args) throws IOException, ParseException {
-		AQuadTree tree = new AQuadTree(new RectangleQ(-180, -90, 180, 90), null);
-		File quadfile = new File(System.getProperty("user.dir") + "/../dataset/addHoc/AQuadtree.dat");
-		File data = new File(System.getProperty("user.dir") + "/../dataset/addHoc/dataset/mbrs/part-r-00000");
-		if(!data.exists()){
-			System.out.println("Data folder doesn't exist");
-			return;
-		}
-		
-		
-		BufferedReader br = new BufferedReader(new InputStreamReader(
-				(new FileInputStream(data.getAbsoluteFile()))));
-		String line;
-		RectangleQ mbr = null;
-		long start = System.currentTimeMillis();
-		while ((line = br.readLine()) != null) {
-			String[] xy = line.substring(0, line.indexOf("\t")).split(",");
-			mbr = new RectangleQ(Double.parseDouble(xy[0]),
-					Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
-					Double.parseDouble(xy[3]));
-			String[] list = line.split("\t");
-			for (int j = 2; j < list.length; j++) {
-				String[] pointCount = list[j].split(",");
-				try {
-					PointQ point = mbr.getCenterPoint();
-					point.date = pointCount[0];
-					point.value = Integer.parseInt(pointCount[1]);
-					tree.insert(point);
-				} catch (IndexOutOfBoundsException e) {
-
-				}
-			}
-			
-		}
-		
-		
-		boolean stored = tree.storeQuadToDisk(quadfile);
-		if (stored) {
-			System.out.println("Stored Successfully");
-		} else {
-			System.out.println("Error while Storing ");
-		}
-		tree.StoreRectanglesWKT();
-		tree.StoreRectanglesToArrayText();
-
-	}
 
 }
