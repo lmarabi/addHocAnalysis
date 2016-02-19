@@ -1,0 +1,9 @@
+body {
+color:white;
+  font:16px calibri;
+background: -webkit-linear-gradient(#000,#222,white);
+margin: 0;
+overflow: hidden ;
+}
+div{position:absolute;
+}

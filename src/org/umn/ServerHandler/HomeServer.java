@@ -17,14 +17,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.umn.AdaptiveIndex.AQuadTree;
+import org.umn.conf.Common;
 import org.umn.index.PointQ;
-import org.umn.index.QuadTree;
 import org.umn.index.RectangleQ;
 
 import com.google.gson.stream.JsonWriter;
 
 public class HomeServer extends AbstractHandler {
-	static QuadTree quadtree;
+	static AQuadTree quadtree;
 	static OutputStreamWriter outputWriter;
 
 
@@ -69,22 +70,19 @@ public class HomeServer extends AbstractHandler {
 			String level = baseRequest.getParameter("level");//min_lat
 //			String startDate = baseRequest.getParameter("startDate");
 //			String endDate = baseRequest.getParameter("endDate");
-			String startDate = "2015-01-01";
-			String endDate = "2015-12-31";
-			
+			String startDate = baseRequest.getParameter("start");
+			String endDate = baseRequest.getParameter("end");
+			String keyword = baseRequest.getParameter("keyword");
+			RectangleQ queryMBR = new RectangleQ(Double.parseDouble(minLong),Double.parseDouble(minLat)
+					, Double.parseDouble(maxLong),Double.parseDouble(maxLat));
 			long startTime, endTime,queryExec_time;
 			startTime = System.currentTimeMillis();
 			ArrayList<PointQ> result = new ArrayList<PointQ>();
 			try {
-				quadtree.get(new RectangleQ(Double.parseDouble(minLong),Double.parseDouble(minLat)
-						, Double.parseDouble(maxLong),Double.parseDouble(maxLat))
-				,startDate,endDate,Integer.parseInt(level), result);
+				quadtree.get(queryMBR, startDate, endDate, Integer.parseInt(level), keyword, result);
+				quadtree.get(queryMBR, startDate, endDate, (Integer.parseInt(level)+1), keyword, result);
 				
-				quadtree.get(new RectangleQ(Double.parseDouble(minLong),Double.parseDouble(minLat)
-						, Double.parseDouble(maxLong),Double.parseDouble(maxLat))
-				,startDate,endDate,Integer.parseInt(level)+1, result);
-				
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -135,10 +133,11 @@ public class HomeServer extends AbstractHandler {
 	}
 
 	public static void main(String[] args) throws Exception {
-		quadtree = new QuadTree(new RectangleQ(-180, -90, 180, 90),
-				1000);
-		File file = new File(System.getProperty("user.dir") + "/quadtree.dat");
-		boolean loadQuadToMemory = quadtree.loadQuadToMemory(file);
+		Common conf = new Common();
+		conf.loadConfigFile();
+		quadtree = new AQuadTree(new RectangleQ(-180, -90, 180, 90),
+				null);
+		boolean loadQuadToMemory = quadtree.loadQuadToMemory(conf.quadtreeDir);
 		if (loadQuadToMemory) {
 			System.out.println("loaded to memory successfully");
 		} else {

@@ -176,7 +176,7 @@ public class AQuadTree implements Serializable {
 			System.out.println("Intersected MBR " + this.spaceMbr + " Level"
 					+ this.level);
 			PointQ p = this.spaceMbr.getCenterPoint();
-			if (keywords == null) {
+			if (keywords.equals("")) {
 				p.value = this.bucket.getVersionCount(fromDate, toDate);
 			} else {
 				p.value = this.bucket.getKeywordCount(fromDate, toDate,
