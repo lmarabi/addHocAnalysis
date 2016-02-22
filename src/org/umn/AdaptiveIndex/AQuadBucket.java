@@ -65,11 +65,11 @@ public class AQuadBucket implements Serializable{
 		int from = this.getDayYearNumber(fromdate);
 		int to = this.getDayYearNumber(todate);
 		for(int i = from; i<=to;i++){
-			if(keywordsCount[i].contains(word)){
-				AQkeywords temp = keywordsCount[i].getEntry(word);
+			AQkeywords temp;
+			if((temp = keywordsCount[i].getEntry(word)) != null){
 				result += temp.count;
-				temp.priority += 1;
-				keywordsCount[i].updateAQKeywords(temp);
+				// this update so we can put the the keyword object in the proper place in the queue.
+				keywordsCount[i].updateAQKeywords(temp,temp);
 			}else{
 				//keyword doesn't exist in the AQtree , need to be query from the inverted index and then updates all leaves nodes.
 				HashMap<RectangleQ,Integer> keyvalue = InvertedIndex.searchKeyword(word, node.spaceMbr, i);
@@ -93,12 +93,13 @@ public class AQuadBucket implements Serializable{
 	}
 	
 	public void setVersionKeywords(int day, String keyword, int count, boolean hasChild) throws ParseException{
-		if(!this.keywordsCount[day].contains(keyword)){
-			this.keywordsCount[day].add(new AQkeywords(keyword, count, 1));
+		AQkeywords temp ;
+		if( (temp = this.keywordsCount[day].getEntry(keyword)) == null){
+			this.keywordsCount[day].add(new AQkeywords(keyword, count));
 		}else{
 			if(hasChild){
-				AQkeywords temp = keywordsCount[day].getEntry(keyword);
-				keywordsCount[day].updateAQKeywords(temp);
+				AQkeywords newvalue = new AQkeywords(keyword, (temp.count+count));
+				keywordsCount[day].updateAQKeywords(temp,newvalue);
 			}else{
 				//do nothing as they are already inserted in the first outer if statement
 			}

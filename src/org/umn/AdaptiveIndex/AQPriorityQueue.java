@@ -1,18 +1,18 @@
 package org.umn.AdaptiveIndex;
 
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class AQPriorityQueue implements Serializable{
-	
-	private AQkeywords[] keywordList; 
+	static final int size = 5;
+	private LinkedBlockingQueue<AQkeywords> keywordList;
 	
 	public AQPriorityQueue() {
-		keywordList = new AQkeywords[5];
-		for(int i =0; i< 5; i++){
-			keywordList[i] = new AQkeywords("", 0, 0);
-		}
+		keywordList = new LinkedBlockingQueue<AQkeywords>(size);
 		
 	}
+	
 	
 	/**
 	 * This method add based on the priority of the keywords
@@ -21,14 +21,7 @@ public class AQPriorityQueue implements Serializable{
 	 * @param word
 	 */
 	public void add(AQkeywords word){
-		int min = keywordList[0].priority;
-		int index = 0;
-		for(int i =1; i< 5; i++){
-			if(keywordList[i].priority < min){
-				index = i;
-			}
-		}
-		keywordList[index] = word;
+		keywordList.add(word);
 	}
 	
 	/**
@@ -38,8 +31,9 @@ public class AQPriorityQueue implements Serializable{
 	 * @return
 	 */
 	public boolean contains(String word){
-		for(int i =0; i< 5; i++){
-			if(keywordList[i].keyword.equals(word)){
+		Iterator<AQkeywords> it = keywordList.iterator();
+		while(it.hasNext()){
+			if(it.next().keyword.equals(word)){
 				return true;
 			}
 		}
@@ -52,9 +46,11 @@ public class AQPriorityQueue implements Serializable{
 	 * @return
 	 */
 	public AQkeywords getEntry(String word){
-		for(int i =0; i< 5; i++){
-			if(keywordList[i].keyword.equals(word)){
-				return keywordList[i];
+		Iterator<AQkeywords> it = keywordList.iterator();
+		while(it.hasNext()){
+			AQkeywords temp = it.next();
+			if(temp.keyword.equals(word)){
+				return temp;
 			}
 		}
 		return null;
@@ -64,13 +60,9 @@ public class AQPriorityQueue implements Serializable{
 	 * This method update the value and the priority of a keywords.
 	 * @param word
 	 */
-	public void updateAQKeywords(AQkeywords word){
-		for(int i =0; i< 5; i++){
-			if(keywordList[i].keyword.equals(word.keyword)){
-				keywordList[i].priority += 1; 
-				keywordList[i].count += word.count;
-			}
-		}
+	public void updateAQKeywords(AQkeywords oldWord, AQkeywords newWord){
+		keywordList.remove(oldWord);
+		add(newWord);
 	}
 
 	

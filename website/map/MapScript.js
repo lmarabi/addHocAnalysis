@@ -200,12 +200,12 @@ function initMap() {
 	});
 	map = new google.maps.Map(document.getElementById('map'), {
 		center : {
-			lat : 51.5073509,
-			lng : -0.1277583
+			lat : 27.288779,
+			lng : 12.975057
 		},
-		zoom : 2,
+		zoom : 3,
 		maxZoom : 14,
-		minZoom : 2,
+		minZoom : 3,
 		mapTypeControlOptions : {
 			mapTypeIds : [ google.maps.MapTypeId.ROADMAP, 'map_style' ]
 		}
@@ -222,6 +222,7 @@ function initMap() {
 		var ne = bound.getNorthEast(); // LatLng of the north-east corner
 		var sw = bound.getSouthWest(); // LatLng of the south-west corder
 		clearCircle();
+		//alert(sw.lng()+" , "+sw.lat()+","+ne.lng()+","+ne.lat());
 		updateData(sw.lng(), sw.lat(), ne.lng(), ne.lat(), zoomLevel);
 	});//endEvent idle listener      
 }//end init map 

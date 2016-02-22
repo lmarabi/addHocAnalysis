@@ -36,14 +36,14 @@ public class AQuadTree implements Serializable {
 	public AQuadTree(RectangleQ mbr, AQuadTree parent) {
 		spaceMbr = mbr;
 		int level = 0;
-		this.bucket = new AQuadBucket();
+		this.bucket = null;
 		this.elements = null;
 		this.hasChild = false;
 		this.parent = parent;
 	}
 
 	// Split the tree into 4 quadrants
-	private void split() {
+	private void split(PointQ p) {
 		// System.out.println("Split  call from "+this.level +" with MBR "+
 		// this.spaceMbr+" elementSize is "+this.elements.size());
 		double subWidth = (this.spaceMbr.getWidth() / 2);
@@ -53,18 +53,29 @@ public class AQuadTree implements Serializable {
 		midWidth = new PointQ((this.spaceMbr.x1 + subWidth), this.spaceMbr.y1);
 		midHeight = new PointQ(this.spaceMbr.x1, (this.spaceMbr.y1 + subHeight));
 
-		this.SW = new AQuadTree(new RectangleQ(this.spaceMbr.x1,
-				this.spaceMbr.y1, midWidth.x, midHeight.y), this);
+		RectangleQ swMbr = new RectangleQ(this.spaceMbr.x1, this.spaceMbr.y1,
+				midWidth.x, midHeight.y);
+		this.SW = new AQuadTree(swMbr, this);
 		this.SW.level = this.level + 1;
-		this.NW = new AQuadTree(new RectangleQ(midHeight.x, midHeight.y,
-				midWidth.x, this.spaceMbr.y2), this);
+
+		RectangleQ nwMbr = new RectangleQ(midHeight.x, midHeight.y, midWidth.x,
+				this.spaceMbr.y2);
+
+		this.NW = new AQuadTree(nwMbr, this);
 		this.NW.level = this.level + 1;
-		this.NE = new AQuadTree(new RectangleQ(midWidth.x, midHeight.y,
-				this.spaceMbr.x2, this.spaceMbr.y2), this);
+
+		RectangleQ neMbr = new RectangleQ(midWidth.x, midHeight.y,
+				this.spaceMbr.x2, this.spaceMbr.y2);
+
+		this.NE = new AQuadTree(neMbr, this);
 		this.NE.level = this.level + 1;
-		this.SE = new AQuadTree(new RectangleQ(midWidth.x, midWidth.y,
-				this.spaceMbr.x2, midHeight.y), this);
+
+		RectangleQ seMbr = new RectangleQ(midWidth.x, midWidth.y,
+				this.spaceMbr.x2, midHeight.y);
+
+		this.SE = new AQuadTree(seMbr, this);
 		this.SE.level = this.level + 1;
+
 	}
 
 	/***
@@ -72,30 +83,31 @@ public class AQuadTree implements Serializable {
 	 * 
 	 * @param node
 	 * @param mapLevel
-	 * @throws ParseException 
+	 * @throws ParseException
 	 */
-	public void InsertKeywords(String keyword, RectangleQ mbr,int day,int count) throws ParseException {
+	public void InsertKeywords(String keyword, RectangleQ mbr, int day,
+			int count) throws ParseException {
 		// check if there is a child or not before insert
-				// First case if node doesn't have child
-				if (!this.spaceMbr.isIntersected(mbr))
-					return;
-				if (!this.hasChild) {
-					this.bucket.setVersionKeywords(day, keyword, count, this.hasChild);
-				}
-				/*
-				 * Else Case if the node has child we need to trace the place where the
-				 * point belong to
-				 */
-				else {
-					this.bucket.setVersionKeywords(day, keyword, count, this.hasChild);
-					this.SW.InsertKeywords( keyword,  mbr, day, count);
-					this.NW.InsertKeywords( keyword,  mbr, day, count);
-					this.NE.InsertKeywords( keyword,  mbr, day, count);
-					this.SE.InsertKeywords( keyword,  mbr, day, count);
-				}
+		// First case if node doesn't have child
+		if (!this.spaceMbr.isIntersected(mbr))
+			return;
+		if (!this.hasChild) {
+			this.bucket.setVersionKeywords(day, keyword, count, this.hasChild);
+		}
+		/*
+		 * Else Case if the node has child we need to trace the place where the
+		 * point belong to
+		 */
+		else {
+			this.bucket.setVersionKeywords(day, keyword, count, this.hasChild);
+			this.SW.InsertKeywords(keyword, mbr, day, count);
+			this.NW.InsertKeywords(keyword, mbr, day, count);
+			this.NE.InsertKeywords(keyword, mbr, day, count);
+			this.SE.InsertKeywords(keyword, mbr, day, count);
+		}
 
 	}
-	
+
 	/**
 	 * Insert an object into this tree
 	 * 
@@ -114,7 +126,8 @@ public class AQuadTree implements Serializable {
 			 */
 			if (this.elements == null) {
 				this.elements = p;
-				this.bucket.incrementtVersionCount(p.date,p.value);
+				this.bucket = new AQuadBucket();
+				this.bucket.incrementtVersionCount(p.date, p.value);
 				// System.out.println("insert "+p+" call from "+this.level
 				// +" with MBR "+
 				// this.spaceMbr+" elementSize is "+this.elements.size());
@@ -123,14 +136,14 @@ public class AQuadTree implements Serializable {
 				// Number of node exceed the capacity split and then reqrrange
 				// the Points
 				if (this.level < 16) {
-					this.split();
-					this.bucket.incrementtVersionCount(p.date,p.value);
+					this.split(p);
+					this.bucket.incrementtVersionCount(p.date, p.value);
 					this.hasChild = true;
 					reArrangePointsinChildren(p);
 					return;
 				} else {
 					// change only statistics of the bucket
-					this.bucket.incrementtVersionCount(p.date,p.value);
+					this.bucket.incrementtVersionCount(p.date, p.value);
 					return;
 				}
 			}
@@ -140,26 +153,18 @@ public class AQuadTree implements Serializable {
 		 * point belong to
 		 */
 		else {
-			this.bucket.incrementtVersionCount(p.date,p.value);
-			// if (this.SW.spaceMbr.contains(p)) {
+			this.bucket.incrementtVersionCount(p.date, p.value);
+
 			this.SW.insert(p);
-			// return;
-			// } else if (this.NW.spaceMbr.contains(p)) {
+
 			this.NW.insert(p);
-			// return;
-			// } else if (this.NE.spaceMbr.contains(p)) {
+
 			this.NE.insert(p);
-			// return;
-			// } else if (this.SE.spaceMbr.contains(p)) {
 			this.SE.insert(p);
-			// return;
-			// }
+
 		}
 
 	}
-
-	
-	
 
 	/**
 	 * This method get the visualize buckets
@@ -167,7 +172,7 @@ public class AQuadTree implements Serializable {
 	 * @param queryMBR
 	 * @param values
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public ArrayList<PointQ> get(RectangleQ queryMBR, String fromDate,
 			String toDate, int mapLevel, String keywords,
@@ -180,8 +185,8 @@ public class AQuadTree implements Serializable {
 				p.value = this.bucket.getVersionCount(fromDate, toDate);
 			} else {
 				p.value = this.bucket.getKeywordCount(fromDate, toDate,
-						keywords,this);
-			}//end if there is a keywords 
+						keywords, this);
+			}// end if there is a keywords
 			values.add(p);
 		} else if (this.hasChild) {
 			if (this.NW.spaceMbr.isIntersected(queryMBR)) {
@@ -211,7 +216,6 @@ public class AQuadTree implements Serializable {
 		return values;
 	}
 
-
 	/**
 	 * This method redistribute the points between the 4 new quadrant child
 	 * 
@@ -219,23 +223,28 @@ public class AQuadTree implements Serializable {
 	 * @throws ParseException
 	 */
 	private void reArrangePointsinChildren(PointQ p) throws ParseException {
+
 		this.SW.insert(p);
 		this.NW.insert(p);
 		this.NE.insert(p);
 		this.SE.insert(p);
+
 	}
 
 	private void printLeafNodes(AQuadTree node, OutputStreamWriter writer,
 			boolean isWKT) throws IOException {
 		if (!node.hasChild) {
-			if (isWKT) {
-				writer.write(toWKT(node.spaceMbr) + "\t" + node.level + "\t"
-						+ node.bucket.getTotalCount() + "\n");
-			} else {
+			if (node.bucket != null) {
+				if (isWKT) {
+					writer.write(toWKT(node.spaceMbr) + "\t" + node.level
+							+ "\t" + node.bucket.getTotalCount() + "\n");
+				} else {
 
-				// writer.write(", new RectangleQ("+node.spaceMbr.toString()+")");
-				writer.write(node.spaceMbr.x1 + "," + node.spaceMbr.y1 + ","
-						+ node.spaceMbr.x2 + "," + node.spaceMbr.y2 + "\n");
+					// writer.write(", new RectangleQ("+node.spaceMbr.toString()+")");
+					writer.write(node.spaceMbr.x1 + "," + node.spaceMbr.y1
+							+ "," + node.spaceMbr.x2 + "," + node.spaceMbr.y2
+							+ "\n");
+				}
 			}
 
 			// System.out.println(counter + "\t" + node.spaceMbr.toString());
@@ -244,6 +253,7 @@ public class AQuadTree implements Serializable {
 			printLeafNodes(node.NW, writer, isWKT);
 			printLeafNodes(node.NE, writer, isWKT);
 			printLeafNodes(node.SE, writer, isWKT);
+
 		}
 	}
 
@@ -251,6 +261,7 @@ public class AQuadTree implements Serializable {
 			boolean isWKT) throws IOException {
 		writer.write(toWKT(node.spaceMbr) + "\n");
 		// System.out.println(counter + "\t" + node.spaceMbr.toString());
+
 		printLeafNodes(node.SW, writer, isWKT);
 		printLeafNodes(node.NW, writer, isWKT);
 		printLeafNodes(node.NE, writer, isWKT);
@@ -271,10 +282,10 @@ public class AQuadTree implements Serializable {
 		} else {
 			// this.bucket = new QuadBucket();
 			this.elements = null;
-			this.SE.removeStatistics();
-			this.NE.removeStatistics();
 			this.SW.removeStatistics();
+			this.NE.removeStatistics();
 			this.NW.removeStatistics();
+			this.SE.removeStatistics();
 		}
 	}
 
@@ -292,7 +303,7 @@ public class AQuadTree implements Serializable {
 	 */
 	public boolean storeQuadToDisk(String outputDir) throws IOException {
 		try {
-			File f = new File(outputDir+"/AQuadtree.dat");
+			File f = new File(outputDir + "/AQuadtree.dat");
 			FileOutputStream fos = new FileOutputStream(f);
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
 			oos.writeObject(spaceMbr);
@@ -319,7 +330,7 @@ public class AQuadTree implements Serializable {
 	 */
 	public boolean loadQuadToMemory(String outputDir) {
 		try {
-			File f = new File(outputDir+"/AQuadtree.dat");
+			File f = new File(outputDir + "/AQuadtree.dat");
 			FileInputStream fis = new FileInputStream(f);
 			ObjectInputStream ois = new ObjectInputStream(fis);
 			this.spaceMbr = (RectangleQ) ois.readObject();
@@ -352,7 +363,8 @@ public class AQuadTree implements Serializable {
 		// this.insert(1);
 		// }
 		OutputStreamWriter writer = new OutputStreamWriter(
-				new FileOutputStream(outputdir+"/AQuadtree.WKT", false), "UTF-8");
+				new FileOutputStream(outputdir + "/AQuadtree.WKT", false),
+				"UTF-8");
 		// printAllNodes(this);
 		writer.write("Id\tMBR\tDepth\tCounts\n");
 		printLeafNodes(this, writer, true);
@@ -366,7 +378,8 @@ public class AQuadTree implements Serializable {
 		// this.insert(1);
 		// }
 		OutputStreamWriter writer = new OutputStreamWriter(
-				new FileOutputStream(outputdir+"/AQuadtree_mbrs.txt", false), "UTF-8");
+				new FileOutputStream(outputdir + "/AQuadtree_mbrs.txt", false),
+				"UTF-8");
 		// printAllNodes(this);
 		// writer.write("{");
 		printLeafNodes(this, writer, false);
@@ -375,6 +388,5 @@ public class AQuadTree implements Serializable {
 		// System.out.println("number of buckets in the leaves:"+counter+
 		// "estimated Size = "+((1.47*counter)/1024)+" MB");
 	}
-
 
 }
