@@ -21,7 +21,17 @@ public class AQPriorityQueue implements Serializable{
 	 * @param word
 	 */
 	public void add(AQkeywords word){
-		keywordList.add(word);
+		if(keywordList.size() < size){
+			keywordList.add(word);
+		}else{
+			try {
+				keywordList.take();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			keywordList.add(word);
+		}
 	}
 	
 	/**
@@ -65,7 +75,6 @@ public class AQPriorityQueue implements Serializable{
 		add(newWord);
 	}
 
-	
 	
 	
 }

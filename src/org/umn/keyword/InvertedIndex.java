@@ -42,14 +42,18 @@ public class InvertedIndex implements Serializable {
 		HashMap<RectangleQ, Integer> result = new HashMap<RectangleQ, Integer>();
 		Common conf = new Common();
 		conf.loadConfigFile();
-		BufferedReader br = new BufferedReader(new InputStreamReader(
-				(new FileInputStream(conf.quadtree_mbrFile))));
-		String line;
+//		BufferedReader br = new BufferedReader(new InputStreamReader(
+//				(new FileInputStream(conf.quadtree_mbrFile))));
+//		String line;
 		RectangleQ test = null;
 		int count = 0;
+		List<String> mbrs = listf(conf.invertedIndexDir);
 		long start = System.currentTimeMillis();
-		while ((line = br.readLine()) != null) {
-			String[] xy = line.split(",");
+//		while ((line = br.readLine()) != null) {
+		for(String filename : mbrs){
+			String[] file = filename.split("=");
+		
+			String[] xy = file[1].split(",");
 			test = new RectangleQ(Double.parseDouble(xy[0]),
 					Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
 					Double.parseDouble(xy[3]));
@@ -61,8 +65,26 @@ public class InvertedIndex implements Serializable {
 				}
 			}
 		}
+//		}
 		// ///////////
 		return result;
+	}
+	
+	
+	public static List<String> listf(String directoryName) {
+		File directory = new File(directoryName+"/inverted/");
+
+		List<String> resultList = new ArrayList<String>();
+
+		// get all the files from a directory
+		File[] fList = directory.listFiles();
+		for (File file : fList) {
+			if (file.isFile()) {
+				resultList.add(file.getName());
+			}
+		}
+		// System.out.println(fList);
+		return resultList;
 	}
 
 	/**

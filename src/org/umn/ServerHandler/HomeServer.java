@@ -1,9 +1,12 @@
 package org.umn.ServerHandler;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
@@ -78,6 +81,8 @@ public class HomeServer extends AbstractHandler {
 			long startTime, endTime,queryExec_time;
 			startTime = System.currentTimeMillis();
 			ArrayList<PointQ> result = new ArrayList<PointQ>();
+			System.out.println("Query from "+queryMBR.toString()+"  Dates:"+startDate+"-"+endDate+" Level"
+			+level+" Keyword"+ keyword);
 			try {
 				quadtree.get(queryMBR, startDate, endDate, Integer.parseInt(level), keyword, result);
 				quadtree.get(queryMBR, startDate, endDate, (Integer.parseInt(level)+1), keyword, result);
@@ -131,14 +136,50 @@ public class HomeServer extends AbstractHandler {
 		}
 
 	}
+	
+	
+	private static void buildQuadtree(String inputdir) throws NumberFormatException, IOException, ParseException{
+		long start = System.currentTimeMillis();
+		quadtree = new AQuadTree(new RectangleQ(-180, -90, 180, 90), null);
+
+		File data = new File(inputdir);
+		if (!data.exists()) {
+			System.out.println("Data folder doesn't exist");
+			return;
+		}
+//		int count = 0;
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(
+				(new FileInputStream(data.getAbsoluteFile()))));
+		String line;
+		RectangleQ mbr = null;
+		long starttime = System.currentTimeMillis();
+		while ((line = br.readLine()) != null) {
+				String[] xy = line.substring(0, line.indexOf("\t")).split(",");
+				mbr = new RectangleQ(Double.parseDouble(xy[0]),
+						Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
+						Double.parseDouble(xy[3]));
+				String[] list = line.split("\t");
+				for (int j = 2; j < list.length; j++) {
+					String[] pointCount = list[j].split(",");
+					try {
+						PointQ point = mbr.getCenterPoint();
+						point.date = pointCount[0];
+						point.value = Integer.parseInt(pointCount[1]);
+						quadtree.insert(point);
+					} catch (IndexOutOfBoundsException e) {
+
+					}
+				}
+		}
+		System.out.println("Building index took in ms: "+ (System.currentTimeMillis()-starttime));
+	}
 
 	public static void main(String[] args) throws Exception {
 		Common conf = new Common();
 		conf.loadConfigFile();
-		quadtree = new AQuadTree(new RectangleQ(-180, -90, 180, 90),
-				null);
-		boolean loadQuadToMemory = quadtree.loadQuadToMemory(conf.quadtreeDir);
-		if (loadQuadToMemory) {
+		buildQuadtree(conf.quadtreeinputFile);
+		if (quadtree != null) {
 			System.out.println("loaded to memory successfully");
 		} else {
 			System.out.println("Could not load to memory");
@@ -148,5 +189,7 @@ public class HomeServer extends AbstractHandler {
 		server.start();
 		server.join();
 	}
+	
+
 
 }

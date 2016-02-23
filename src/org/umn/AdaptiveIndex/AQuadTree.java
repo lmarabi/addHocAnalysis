@@ -89,22 +89,24 @@ public class AQuadTree implements Serializable {
 			int count) throws ParseException {
 		// check if there is a child or not before insert
 		// First case if node doesn't have child
-		if (!this.spaceMbr.isIntersected(mbr))
-			return;
-		if (!this.hasChild) {
+//		if (!this.spaceMbr.isIntersected(mbr))
+//			return;
+		if (this.bucket != null) {
 			this.bucket.setVersionKeywords(day, keyword, count, this.hasChild);
+			if(this.SW != null)
+				this.SW.InsertKeywords(keyword, mbr, day, count);
+			if(this.NW != null)
+				this.NW.InsertKeywords(keyword, mbr, day, count);
+			if(this.NE != null)
+				this.NE.InsertKeywords(keyword, mbr, day, count);
+			if(this.SE != null)
+				this.SE.InsertKeywords(keyword, mbr, day, count);
 		}
 		/*
 		 * Else Case if the node has child we need to trace the place where the
 		 * point belong to
 		 */
-		else {
-			this.bucket.setVersionKeywords(day, keyword, count, this.hasChild);
-			this.SW.InsertKeywords(keyword, mbr, day, count);
-			this.NW.InsertKeywords(keyword, mbr, day, count);
-			this.NE.InsertKeywords(keyword, mbr, day, count);
-			this.SE.InsertKeywords(keyword, mbr, day, count);
-		}
+			
 
 	}
 
@@ -154,11 +156,8 @@ public class AQuadTree implements Serializable {
 		 */
 		else {
 			this.bucket.incrementtVersionCount(p.date, p.value);
-
 			this.SW.insert(p);
-
 			this.NW.insert(p);
-
 			this.NE.insert(p);
 			this.SE.insert(p);
 
@@ -177,11 +176,11 @@ public class AQuadTree implements Serializable {
 	public ArrayList<PointQ> get(RectangleQ queryMBR, String fromDate,
 			String toDate, int mapLevel, String keywords,
 			ArrayList<PointQ> values) throws Exception {
-		if (this.level == mapLevel) {
+		if (this.level == mapLevel && this.bucket != null) {
 			System.out.println("Intersected MBR " + this.spaceMbr + " Level"
 					+ this.level);
 			PointQ p = this.spaceMbr.getCenterPoint();
-			if (keywords.equals("")) {
+			if (keywords == null || keywords.equals("")) {
 				p.value = this.bucket.getVersionCount(fromDate, toDate);
 			} else {
 				p.value = this.bucket.getKeywordCount(fromDate, toDate,
@@ -189,19 +188,19 @@ public class AQuadTree implements Serializable {
 			}// end if there is a keywords
 			values.add(p);
 		} else if (this.hasChild) {
-			if (this.NW.spaceMbr.isIntersected(queryMBR)) {
+			if (this.NW != null && this.NW.spaceMbr.isIntersected(queryMBR)) {
 				this.NW.get(queryMBR, fromDate, toDate, mapLevel, keywords,
 						values);
 			}
-			if (this.NE.spaceMbr.isIntersected(queryMBR)) {
+			if (this.NE != null && this.NE.spaceMbr.isIntersected(queryMBR)) {
 				this.NE.get(queryMBR, fromDate, toDate, mapLevel, keywords,
 						values);
 			}
-			if (this.SE.spaceMbr.isIntersected(queryMBR)) {
+			if (this.SE != null && this.SE.spaceMbr.isIntersected(queryMBR)) {
 				this.SE.get(queryMBR, fromDate, toDate, mapLevel, keywords,
 						values);
 			}
-			if (this.SW.spaceMbr.isIntersected(queryMBR)) {
+			if (this.SW != null && this.SW.spaceMbr.isIntersected(queryMBR)) {
 				this.SW.get(queryMBR, fromDate, toDate, mapLevel, keywords,
 						values);
 			}
@@ -223,7 +222,6 @@ public class AQuadTree implements Serializable {
 	 * @throws ParseException
 	 */
 	private void reArrangePointsinChildren(PointQ p) throws ParseException {
-
 		this.SW.insert(p);
 		this.NW.insert(p);
 		this.NE.insert(p);
