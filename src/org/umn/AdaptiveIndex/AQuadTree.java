@@ -85,22 +85,23 @@ public class AQuadTree implements Serializable {
 	 * @param mapLevel
 	 * @throws ParseException
 	 */
-	public void InsertKeywords(String keyword, RectangleQ mbr, int day,
-			int count) throws ParseException {
+	public void InsertKeywords(String keyword, int day,
+			int count, AQuadTree node) throws ParseException {
 		// check if there is a child or not before insert
 		// First case if node doesn't have child
 //		if (!this.spaceMbr.isIntersected(mbr))
 //			return;
-		if (this.bucket != null) {
-			this.bucket.setVersionKeywords(day, keyword, count, this.hasChild);
-			if(this.SW != null)
-				this.SW.InsertKeywords(keyword, mbr, day, count);
-			if(this.NW != null)
-				this.NW.InsertKeywords(keyword, mbr, day, count);
-			if(this.NE != null)
-				this.NE.InsertKeywords(keyword, mbr, day, count);
-			if(this.SE != null)
-				this.SE.InsertKeywords(keyword, mbr, day, count);
+		if (node.bucket != null) {
+			System.out.println("Insert to level:"+node.level+" with MBR:"+node.spaceMbr);
+			node.bucket.setVersionKeywords(day, keyword, count, this.hasChild);
+			if(node.SW != null)
+				InsertKeywords(keyword, day, count, node.SW);
+			if(node.NW != null)
+				InsertKeywords(keyword, day, count, node.NW);
+			if(node.NE != null)
+				InsertKeywords(keyword, day, count, node.NE);
+			if(node.SE != null)
+				InsertKeywords(keyword, day, count, node.SE);
 		}
 		/*
 		 * Else Case if the node has child we need to trace the place where the
@@ -177,8 +178,8 @@ public class AQuadTree implements Serializable {
 			String toDate, int mapLevel, String keywords,
 			ArrayList<PointQ> values) throws Exception {
 		if (this.level == mapLevel && this.bucket != null) {
-			System.out.println("Intersected MBR " + this.spaceMbr + " Level"
-					+ this.level);
+//			System.out.println("Intersected MBR " + this.spaceMbr + " Level"
+//					+ this.level);
 			PointQ p = this.spaceMbr.getCenterPoint();
 			if (keywords == null || keywords.equals("")) {
 				p.value = this.bucket.getVersionCount(fromDate, toDate);

@@ -28,6 +28,32 @@ public class InvertedIndex implements Serializable {
 	public InvertedIndex() {
 		this.keywords = new HashMap<String, Integer>();
 	}
+	
+	public static List<RectangleQ> intersectedMBR(RectangleQ queryMbr,RectangleQ existingMbr) throws Exception{
+		List<RectangleQ> list = new ArrayList<RectangleQ>();
+		Common conf = new Common();
+		conf.loadConfigFile();
+//		BufferedReader br = new BufferedReader(new InputStreamReader(
+//				(new FileInputStream(conf.quadtree_mbrFile))));
+//		String line;
+		RectangleQ test = null;
+		int count = 0;
+		List<String> mbrs = listf(conf.invertedIndexDir);
+		long start = System.currentTimeMillis();
+//		while ((line = br.readLine()) != null) {
+		for(String filename : mbrs){
+			String[] file = filename.split("=");
+		
+			String[] xy = file[1].split(",");
+			test = new RectangleQ(Double.parseDouble(xy[0]),
+					Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
+					Double.parseDouble(xy[3]));
+			if(queryMbr.isIntersected(test) && !existingMbr.isIntersected(test)){
+				list.add(test);
+			}
+		}
+		return list;
+	}
 
 	/**
 	 * Search inverted

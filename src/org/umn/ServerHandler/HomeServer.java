@@ -102,11 +102,13 @@ public class HomeServer extends AbstractHandler {
 			writer.name("locations");
 			writer.beginArray();
 			for(PointQ p : result){
-				writer.beginObject();
-				writer.name("x").value(p.x);
-				writer.name("y").value(p.y);
-				writer.name("value").value(p.value);
-				writer.endObject();
+				if (p.value > 0) {
+					writer.beginObject();
+					writer.name("x").value(p.x);
+					writer.name("y").value(p.y);
+					writer.name("value").value(p.value);
+					writer.endObject();
+				}
 			}
 			writer.endArray();
 			writer.endObject();
