@@ -52,7 +52,9 @@ public class AQuadBucket implements Serializable {
 	}
 	
 	public void initilizeKeywordbucket(int i){
-		keywordsCount[i] = new AQPriorityQueue();
+		if(keywordsCount[i] == null){
+			keywordsCount[i] = new AQPriorityQueue();
+		}
 		
 	}
 
@@ -72,9 +74,7 @@ public class AQuadBucket implements Serializable {
 		int from = this.getDayYearNumber(fromdate);
 		int to = this.getDayYearNumber(todate);
 		for (int i = from; i <= to; i++) {
-			if(keywordsCount[i]== null){
-				initilizeKeywordbucket(i);
-			}
+			initilizeKeywordbucket(i);
 			AQkeywords temp;
 			if ((temp = keywordsCount[i].getEntry(word)) != null) {
 				System.out.println("Already Exist in the cash");
@@ -87,6 +87,7 @@ public class AQuadBucket implements Serializable {
 				System.out.println(" Read From the cash vlaues.");
 				keywordsCount[i].add(new AQkeywords(word, count));
 				// finds out rectangles outside the children boundaries. 
+				result += count;
 				
 			}else{
 				// keyword doesn't exist in the AQtree , need to be query from
@@ -100,7 +101,7 @@ public class AQuadBucket implements Serializable {
 				while (it.hasNext()) {
 					Map.Entry<RectangleQ, Integer> entry = it.next();
 					node.InsertKeywords(word, i,
-							entry.getValue(),node);
+							entry.getValue());
 					count += entry.getValue();
 				}
 				result = count;
@@ -144,8 +145,6 @@ public class AQuadBucket implements Serializable {
 	public void setVersionKeywords(int day, String keyword, int count,
 			boolean hasChild) throws ParseException {
 		AQkeywords temp;
-		if(this.keywordsCount[day] == null)
-			return;
 		if ((temp = this.keywordsCount[day].getEntry(keyword)) == null) {
 			this.keywordsCount[day].add(new AQkeywords(keyword, count));
 		} else {
