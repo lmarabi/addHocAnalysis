@@ -25,8 +25,7 @@ public class MainAQtree {
 	}
 
 	public static void testQuery(String quadtreeDir) throws Exception {
-		 quadtree = new AQuadTree(new RectangleQ(-180, -90, 180, 90),
-				null);
+		 quadtree = new AQuadTree(new RectangleQ(-180, -90, 180, 90));
 //		boolean loadQuadToMemory = quadtree.loadQuadToMemory(quadtreeDir);
 //		if (loadQuadToMemory) {
 			System.out.println("loaded to memory successfully");
@@ -67,7 +66,7 @@ public class MainAQtree {
 	public static void ConstructAQtree(String inputdir, String outputdir)
 			throws NumberFormatException, IOException, ParseException {
 		long start = System.currentTimeMillis();
-		quadtree = new AQuadTree(new RectangleQ(-180, -90, 180, 90), null);
+		quadtree = new AQuadTree(new RectangleQ(-180, -90, 180, 90));
 
 		File data = new File(inputdir);
 		if (!data.exists()) {

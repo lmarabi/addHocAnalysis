@@ -33,13 +33,12 @@ public class AQuadTree implements Serializable {
 	// OutputStreamWriter writer;
 	int counter = 0;
 
-	public AQuadTree(RectangleQ mbr, AQuadTree parent) {
+	public AQuadTree(RectangleQ mbr) {
 		spaceMbr = mbr;
 		int level = 0;
 		this.bucket = null;
 		this.elements = null;
 		this.hasChild = false;
-		this.parent = parent;
 	}
 
 	// Split the tree into 4 quadrants
@@ -55,25 +54,25 @@ public class AQuadTree implements Serializable {
 
 		RectangleQ swMbr = new RectangleQ(this.spaceMbr.x1, this.spaceMbr.y1,
 				midWidth.x, midHeight.y);
-		this.SW = new AQuadTree(swMbr, this);
+		this.SW = new AQuadTree(swMbr);
 		this.SW.level = this.level + 1;
 
 		RectangleQ nwMbr = new RectangleQ(midHeight.x, midHeight.y, midWidth.x,
 				this.spaceMbr.y2);
 
-		this.NW = new AQuadTree(nwMbr, this);
+		this.NW = new AQuadTree(nwMbr);
 		this.NW.level = this.level + 1;
 
 		RectangleQ neMbr = new RectangleQ(midWidth.x, midHeight.y,
 				this.spaceMbr.x2, this.spaceMbr.y2);
 
-		this.NE = new AQuadTree(neMbr, this);
+		this.NE = new AQuadTree(neMbr);
 		this.NE.level = this.level + 1;
 
 		RectangleQ seMbr = new RectangleQ(midWidth.x, midWidth.y,
 				this.spaceMbr.x2, midHeight.y);
 
-		this.SE = new AQuadTree(seMbr, this);
+		this.SE = new AQuadTree(seMbr);
 		this.SE.level = this.level + 1;
 
 	}
@@ -92,6 +91,7 @@ public class AQuadTree implements Serializable {
 //		if (!this.spaceMbr.isIntersected(mbr))
 //			return;
 		if (node.bucket != null) {
+			node.bucket.initilizeKeywordbucket(day);
 			System.out.println("Insert to level:"+node.level+" with MBR:"+node.spaceMbr);
 			node.bucket.setVersionKeywords(day, keyword, count, this.hasChild);
 			if(node.SW != null)

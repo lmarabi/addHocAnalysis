@@ -140,9 +140,9 @@ public class HomeServer extends AbstractHandler {
 	}
 	
 	
-	private static void buildQuadtree(String inputdir) throws NumberFormatException, IOException, ParseException{
+	private static void buildQuadtree(String inputdir,String outputdir) throws NumberFormatException, IOException, ParseException{
 		long start = System.currentTimeMillis();
-		quadtree = new AQuadTree(new RectangleQ(-180, -90, 180, 90), null);
+		quadtree = new AQuadTree(new RectangleQ(-177, -70, 177, 70));
 
 		File data = new File(inputdir);
 		if (!data.exists()) {
@@ -156,7 +156,7 @@ public class HomeServer extends AbstractHandler {
 		String line;
 		RectangleQ mbr = null;
 		long starttime = System.currentTimeMillis();
-		while ((line = br.readLine()) != null) {
+		while ((line = br.readLine()) != null) { 
 				String[] xy = line.substring(0, line.indexOf("\t")).split(",");
 				mbr = new RectangleQ(Double.parseDouble(xy[0]),
 						Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
@@ -175,12 +175,13 @@ public class HomeServer extends AbstractHandler {
 				}
 		}
 		System.out.println("Building index took in ms: "+ (System.currentTimeMillis()-starttime));
+		quadtree.StoreRectanglesWKT(outputdir);
 	}
 
 	public static void main(String[] args) throws Exception {
 		Common conf = new Common();
 		conf.loadConfigFile();
-		buildQuadtree(conf.quadtreeinputFile);
+		buildQuadtree(conf.quadtreeinputFile,conf.quadtreeDir);
 		if (quadtree != null) {
 			System.out.println("loaded to memory successfully");
 		} else {

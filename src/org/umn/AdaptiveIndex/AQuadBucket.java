@@ -26,9 +26,9 @@ public class AQuadBucket implements Serializable {
 		// HashMap<String, Integer>[] hashMaps = (HashMap<String, Integer>[])
 		// new HashMap<?,?>[366];
 		keywordsCount = new AQPriorityQueue[366];
-		for (int i = 0; i < 366; i++) {
-			keywordsCount[i] = new AQPriorityQueue();
-		}
+//		for (int i = 0; i < 366; i++) {
+//			keywordsCount[i] = null;
+//		}
 		versionCount = new int[366];
 	}
 
@@ -50,6 +50,11 @@ public class AQuadBucket implements Serializable {
 		}
 		return result;
 	}
+	
+	public void initilizeKeywordbucket(int i){
+		keywordsCount[i] = new AQPriorityQueue();
+		
+	}
 
 	/**
 	 * This function search for the keywords in the buckets.
@@ -67,6 +72,9 @@ public class AQuadBucket implements Serializable {
 		int from = this.getDayYearNumber(fromdate);
 		int to = this.getDayYearNumber(todate);
 		for (int i = from; i <= to; i++) {
+			if(keywordsCount[i]== null){
+				initilizeKeywordbucket(i);
+			}
 			AQkeywords temp;
 			if ((temp = keywordsCount[i].getEntry(word)) != null) {
 				System.out.println("Already Exist in the cash");
@@ -107,16 +115,16 @@ public class AQuadBucket implements Serializable {
 			result += node.bucket.keywordsCount[day].getEntry(word) == null ? 0 : node.bucket.keywordsCount[day].getEntry(word).count;
 			return result;
 		}
-		if(node.SW != null && node.SW.bucket != null){
+		if(node.SW != null && node.SW.bucket != null && node.SW.bucket.keywordsCount[day] != null){
 			result += getCountFromChilds(node.SW, day, word);
 		}
-		if(node.SE != null && node.SE.bucket != null){
+		if(node.SE != null && node.SE.bucket != null && node.SE.bucket.keywordsCount[day] != null){
 			result += getCountFromChilds(node.SE, day, word);
 		}
-		if(node.NW != null && node.NW.bucket != null){
+		if(node.NW != null && node.NW.bucket != null && node.NW.bucket.keywordsCount[day] != null){
 			result += getCountFromChilds(node.NW, day, word);
 		}
-		if(node.NE != null && node.NE.bucket != null){
+		if(node.NE != null && node.NE.bucket != null && node.NE.bucket.keywordsCount[day] != null){
 			result += getCountFromChilds(node.NE, day, word);
 		}
 		return result;
@@ -136,6 +144,8 @@ public class AQuadBucket implements Serializable {
 	public void setVersionKeywords(int day, String keyword, int count,
 			boolean hasChild) throws ParseException {
 		AQkeywords temp;
+		if(this.keywordsCount[day] == null)
+			return;
 		if ((temp = this.keywordsCount[day].getEntry(keyword)) == null) {
 			this.keywordsCount[day].add(new AQkeywords(keyword, count));
 		} else {
