@@ -84,7 +84,7 @@ public class HomeServer extends AbstractHandler {
 			System.out.println("Query from "+queryMBR.toString()+"  Dates:"+startDate+"-"+endDate+" Level"
 			+level+" Keyword"+ keyword);
 			try {
-				quadtree.get(queryMBR, startDate, endDate, Integer.parseInt(level), keyword, result);
+//				quadtree.get(queryMBR, startDate, endDate, Integer.parseInt(level), keyword, result);
 				quadtree.get(queryMBR, startDate, endDate, (Integer.parseInt(level)+1), keyword, result);
 				
 			} catch (Exception e) {

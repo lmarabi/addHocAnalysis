@@ -29,7 +29,7 @@ public class InvertedIndex implements Serializable {
 		this.keywords = new HashMap<String, Integer>();
 	}
 	
-	public static List<RectangleQ> intersectedMBR(RectangleQ queryMbr,RectangleQ existingMbr) throws Exception{
+	public static List<RectangleQ> intersectedMBR(RectangleQ queryMbr,List<RectangleQ> existingMbr) throws Exception{
 		List<RectangleQ> list = new ArrayList<RectangleQ>();
 		Common conf = new Common();
 		conf.loadConfigFile();
@@ -48,11 +48,98 @@ public class InvertedIndex implements Serializable {
 			test = new RectangleQ(Double.parseDouble(xy[0]),
 					Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
 					Double.parseDouble(xy[3]));
-			if(queryMbr.isIntersected(test) && !existingMbr.isIntersected(test)){
+			if((!existingMbr.contains(test)) && queryMbr.isIntersected(test)){
 				list.add(test);
 			}
 		}
 		return list;
+	}
+	
+	
+	
+	
+	
+	public static HashMap<RectangleQ, Integer> searchKeywordSmart(String keyword,
+			RectangleQ queryMbr, int dayofYear,List<RectangleQ> existMBr) throws Exception {
+		HashMap<RectangleQ, Integer> result = new HashMap<RectangleQ, Integer>();
+		Common conf = new Common();
+		conf.loadConfigFile();
+		
+//		String cmd = "grep \'"+keyword+"\' "+conf.invertedIndexinputFile;
+//		Process proc = Runtime.getRuntime().exec(cmd);
+//		BufferedReader stdInput = new BufferedReader(new 
+//			     InputStreamReader(proc.getInputStream()));
+//		// read the output from the command
+//		System.out.println("Here is the standard output of the command:\n");
+//		String s = null;
+//		RectangleQ mbr = null;
+//		while ((s = stdInput.readLine()) != null) {
+//		    System.out.println(s);
+//		    boolean found = false;
+//			String[] xy = s.substring(0, s.indexOf("\t")).split(",");
+//			mbr = new RectangleQ(Double.parseDouble(xy[0]),
+//					Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
+//					Double.parseDouble(xy[3]));
+//			String[] list = s.split("\t");
+//			String time = list[1];
+//			if ((! existMBr.contains(mbr)) && queryMbr.isIntersected(mbr)) {
+//				for (int j = 2; j < list.length; j++) {
+//					String[] keyvalue = list[j].split(",");
+//					if(keyvalue[0].equals(keyword)){
+//						found = true;
+//						result.put(mbr, Integer.parseInt(keyvalue[1]));
+//						break;
+//					}
+//				}
+//				if(found == false){
+//					result.put(mbr, 0);
+//				}
+//			}
+//		}
+//
+//		BufferedReader stdError = new BufferedReader(new 
+//			     InputStreamReader(proc.getErrorStream()));
+//
+//		// read any errors from the attempted command
+//		System.out.println("Here is the standard error of the command (if any):\n");
+//		while ((s = stdError.readLine()) != null) {
+//		    System.out.println(s);
+//		}
+		
+		
+		BufferedReader br = new BufferedReader(new InputStreamReader(
+				(new FileInputStream(conf.invertedIndexinputFile))));
+		String line;
+		RectangleQ mbr = null;
+		long start = System.currentTimeMillis();
+		while ((line = br.readLine()) != null) {
+			boolean found = false;
+			String[] xy = line.substring(0, line.indexOf("\t")).split(",");
+			mbr = new RectangleQ(Double.parseDouble(xy[0]),
+					Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
+					Double.parseDouble(xy[3]));
+			String[] list = line.split("\t");
+			String time = list[1];
+			if ((! existMBr.contains(mbr)) && queryMbr.isIntersected(mbr)) {
+				for (int j = 2; j < list.length; j++) {
+					String[] keyvalue = list[j].split(",");
+					if(keyvalue[0].equals(keyword)){
+						found = true;
+						result.put(mbr, Integer.parseInt(keyvalue[1]));
+						break;
+					}
+				}
+				if(found == false){
+					result.put(mbr, 0);
+				}
+			}
+			
+		}
+		long end = System.currentTimeMillis();
+		System.out.println("Execution time for Building index in ms:"
+				+ (end - start));
+		br.close();
+		return result;
 	}
 
 	/**
@@ -63,7 +150,7 @@ public class InvertedIndex implements Serializable {
 	 * @throws Exception
 	 */
 	public static HashMap<RectangleQ, Integer> searchKeyword(String keyword,
-			RectangleQ queryMbr, int dayofYear) throws Exception {
+			RectangleQ queryMbr, int dayofYear,List<RectangleQ> existMBr) throws Exception {
 		// ///////////
 		HashMap<RectangleQ, Integer> result = new HashMap<RectangleQ, Integer>();
 		Common conf = new Common();
@@ -83,11 +170,13 @@ public class InvertedIndex implements Serializable {
 			test = new RectangleQ(Double.parseDouble(xy[0]),
 					Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
 					Double.parseDouble(xy[3]));
-			if (queryMbr.isIntersected(test)) {
+			if ((! existMBr.contains(test)) && queryMbr.isIntersected(test)) {
 				InvertedIndex index = new InvertedIndex();
 				index.ReadFromDisk(test, dayofYear, conf.invertedIndexDir);
 				if (index.keywords.containsKey(keyword)) {
 					result.put(test, index.keywords.get(keyword));
+				}else{
+					result.put(test, 0);
 				}
 			}
 		}
@@ -198,9 +287,13 @@ public class InvertedIndex implements Serializable {
 	public boolean ReadFromDisk(RectangleQ mbr, int dayofYear, String outputdir) {
 
 		try {
-			FileInputStream fis = new FileInputStream(new File(outputdir
+			File file = new File(outputdir
 					+ "/inverted/" + dayofYear + "=" + mbr.x1 + "," + mbr.y1
-					+ "," + mbr.x2 + "," + mbr.y2));
+					+ "," + mbr.x2 + "," + mbr.y2);
+			if(!file.exists()){
+				return false;
+			}
+			FileInputStream fis = new FileInputStream(file);
 			ObjectInputStream ois = new ObjectInputStream(fis);
 			this.keywords = (HashMap<String, Integer>) ois.readObject();
 			ois.close();

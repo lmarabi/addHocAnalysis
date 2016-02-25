@@ -70,7 +70,7 @@ public class AQuadBucket implements Serializable {
 	public int getKeywordCount(String fromdate, String todate, String word,
 			AQuadTree node) throws Exception {
 		int result = 0;
-		int count = 0;
+		ExistRectangls exist = new ExistRectangls();
 		int from = this.getDayYearNumber(fromdate);
 		int to = this.getDayYearNumber(todate);
 		for (int i = from; i <= to; i++) {
@@ -82,53 +82,56 @@ public class AQuadBucket implements Serializable {
 				// this update so we can put the the keyword object in the
 				// proper place in the queue.
 				keywordsCount[i].updateAQKeywords(temp, temp);
-			} else if((count = getCountFromChilds(node, i, word)) > 0){
+			}
+			
+			exist = getCountFromChilds(node, i, word,exist);
+			if(exist.count > 0 ){
 				// update from existing children. 
 				System.out.println(" Read From the cash vlaues.");
-				keywordsCount[i].add(new AQkeywords(word, count));
+				keywordsCount[i].add(new AQkeywords(word, exist.count));
 				// finds out rectangles outside the children boundaries. 
-				result += count;
-				
-			}else{
+				result += exist.count;
+			}
+			else{
 				// keyword doesn't exist in the AQtree , need to be query from
 				// the inverted index and then updates all leaves nodes.
 				System.out.println("Read from the disk");
 				HashMap<RectangleQ, Integer> keyvalue = InvertedIndex
-						.searchKeyword(word, node.spaceMbr, i);
+						.searchKeyword(word, node.spaceMbr, i,exist.mbrs);
 				// update the sum of these recatngles to this buckets
 				Iterator<Entry<RectangleQ, Integer>> it = keyvalue.entrySet()
 						.iterator();
 				while (it.hasNext()) {
 					Map.Entry<RectangleQ, Integer> entry = it.next();
 					node.InsertKeywords(word, i,
-							entry.getValue());
-					count += entry.getValue();
+							entry.getValue(),exist.mbrs);
+					result += entry.getValue();
 				}
-				result = count;
 			}
 		}
 		return result;
 	}
 	
-	public int getCountFromChilds(AQuadTree node, int day,String word){
-		int result = 0;
+	public ExistRectangls getCountFromChilds(AQuadTree node, int day,String word, ExistRectangls existMbrs){
 		if(!node.hasChild){
-			result += node.bucket.keywordsCount[day].getEntry(word) == null ? 0 : node.bucket.keywordsCount[day].getEntry(word).count;
-			return result;
+			if(node.bucket.keywordsCount[day].getEntry(word) != null ){
+				existMbrs.count += node.bucket.keywordsCount[day].getEntry(word).count;
+				existMbrs.mbrs.add(node.spaceMbr);
+			}
 		}
 		if(node.SW != null && node.SW.bucket != null && node.SW.bucket.keywordsCount[day] != null){
-			result += getCountFromChilds(node.SW, day, word);
+			getCountFromChilds(node.SW, day, word,existMbrs);
 		}
 		if(node.SE != null && node.SE.bucket != null && node.SE.bucket.keywordsCount[day] != null){
-			result += getCountFromChilds(node.SE, day, word);
+			getCountFromChilds(node.SE, day, word,existMbrs);
 		}
 		if(node.NW != null && node.NW.bucket != null && node.NW.bucket.keywordsCount[day] != null){
-			result += getCountFromChilds(node.NW, day, word);
+			getCountFromChilds(node.NW, day, word,existMbrs);
 		}
 		if(node.NE != null && node.NE.bucket != null && node.NE.bucket.keywordsCount[day] != null){
-			result += getCountFromChilds(node.NE, day, word);
+			getCountFromChilds(node.NE, day, word,existMbrs);
 		}
-		return result;
+		return existMbrs;
 	}
 
 	public void incrementtVersionCount(String day, int count)

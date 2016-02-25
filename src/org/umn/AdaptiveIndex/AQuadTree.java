@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.umn.index.PointQ;
 import org.umn.index.RectangleQ;
@@ -85,23 +86,23 @@ public class AQuadTree implements Serializable {
 	 * @throws ParseException
 	 */
 	public void InsertKeywords(String keyword, int day,
-			int count) throws ParseException {
+			int count,List<RectangleQ> existMBR) throws ParseException {
 		// check if there is a child or not before insert
 		// First case if node doesn't have child
 //		if (!this.spaceMbr.isIntersected(mbr))
 //			return;
-		if (this.bucket != null) {
+		if (this.bucket != null && (!existMBR.contains(this.spaceMbr))) {
 			this.bucket.initilizeKeywordbucket(day);
 			//System.out.println("Insert to level:"+this.level+" with MBR:"+this.spaceMbr);
 			this.bucket.setVersionKeywords(day, keyword, count, this.hasChild);
 			if(this.SW != null)
-				this.SW.InsertKeywords(keyword, day, count);
+				this.SW.InsertKeywords(keyword, day, count,existMBR);
 			if(this.NW != null)
-				this.NW.InsertKeywords(keyword, day, count);
+				this.NW.InsertKeywords(keyword, day, count,existMBR);
 			if(this.NE != null)
-				this.NE.InsertKeywords(keyword, day, count);
+				this.NE.InsertKeywords(keyword, day, count,existMBR);
 			if(this.SE != null)
-				this.SE.InsertKeywords(keyword, day, count);
+				this.SE.InsertKeywords(keyword, day, count,existMBR);
 		}
 		/*
 		 * Else Case if the node has child we need to trace the place where the
