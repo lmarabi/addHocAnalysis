@@ -23,6 +23,7 @@ public class QuadTree implements Serializable {
 	QuadTree NW, NE, SE, SW; // four subtrees
 	// OutputStreamWriter writer;
 	int counter = 0;
+	private static final long serialVersionUID = Long.parseLong("9187403563475392594");
 
 	public QuadTree(RectangleQ mbr, int capacity) {
 		spaceMbr = mbr;
@@ -214,7 +215,17 @@ public class QuadTree implements Serializable {
 			}else{
 				
 				//writer.write(", new RectangleQ("+node.spaceMbr.toString()+")");
-				writer.write(node.spaceMbr.x1+","+node.spaceMbr.y1+","+node.spaceMbr.x2+","+node.spaceMbr.y2+"\n");
+				writer.write(node.spaceMbr.x1+","+node.spaceMbr.y1+","+node.spaceMbr.x2+","+node.spaceMbr.y2+"\t");
+				for(int i=0;i<366;i++){
+					try {
+						writer.write("\t"+i+","+node.bucket.getVersionCount(String.valueOf(i), ""));
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				writer.write("\n");
+				
 			}
 			
 			// System.out.println(counter + "\t" + node.spaceMbr.toString());
@@ -350,7 +361,7 @@ public class QuadTree implements Serializable {
 		// }
 		OutputStreamWriter writer = new OutputStreamWriter(
 				new FileOutputStream(System.getProperty("user.dir")
-						+ "/quadtree_mbrs.txt", false), "UTF-8");
+						+ "/../dataset/addHoc/versionofQuadTree/2015/quadtree_mbrs.txt", false), "UTF-8");
 		// printAllNodes(this);
 		//writer.write("{");
 		printLeafNodes(this, writer,false);

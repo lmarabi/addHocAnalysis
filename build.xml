@@ -14,7 +14,7 @@
 	<!--	
 	<property name="main.class" value="org.umn.AdaptiveIndex.MainAQtree" />
 	-->
-	<property name="main.class" value="org.umn.ServerHandler.HomeServer" />
+	<property name="main.class" value="org.umn.ServerHandler.OldHomeServer" />
 	
 
 	<!--

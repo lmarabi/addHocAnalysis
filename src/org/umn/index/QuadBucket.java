@@ -9,6 +9,8 @@ import java.util.HashMap;
 
 public class QuadBucket implements Serializable{
 	static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//	private static final long serialVersionUID = Long.parseLong("6370864004145947726");
+
 
 	//Hash keywords
 //	private HashMap<String, Integer> keywords;
@@ -35,6 +37,7 @@ public class QuadBucket implements Serializable{
 		for(int i = from; i<=to;i++){
 			result += versionCount[i];
 		}
+//		result = versionCount[Integer.parseInt(fromdate)];
 		return result;
 	}
 	

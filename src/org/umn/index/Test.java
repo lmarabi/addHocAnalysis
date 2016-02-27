@@ -123,23 +123,23 @@ public class Test {
 
 	public static void QueryQuadTree() throws IOException, ParseException {
 		QuadTree quadtree = new QuadTree(new RectangleQ(-180, -90, 180, 90),
-				1000);
-		File file = new File(System.getProperty("user.dir") + "../dataset/addHoc/quadtree.dat");
+				1);
+		File file = new File(System.getProperty("user.dir") + "/../dataset/addHoc/versionofQuadTree/2015/quadtree.dat");
 		boolean loadQuadToMemory = quadtree.loadQuadToMemory(file);
 		if (loadQuadToMemory) {
-			quadtree.removeStatistics();
-			quadtree.StoreRectanglesToArrayText();
-			quadtree.storeQuadToDisk(file);
 			System.out.println("loaded to memory successfully");
-			long startTime, endTime,queryExec_time;
-			startTime = System.currentTimeMillis();
-			ArrayList<PointQ> result = new ArrayList<PointQ>();
-			quadtree.get(new RectangleQ(-180, -90, 180, 90),"2014-10-01","2014-12-31",1, result);
-			endTime = System.currentTimeMillis();
-			System.out.println("Result size = " + result.size()+" Execution time "+ (endTime - startTime));
-			for(PointQ p : result){
-				System.out.println(p.value);
-			}
+			quadtree.StoreRectanglesToArrayText();
+			//quadtree.storeQuadToDisk(file);
+			System.out.println("stored successfully");
+//			long startTime, endTime,queryExec_time;
+//			startTime = System.currentTimeMillis();
+//			ArrayList<PointQ> result = new ArrayList<PointQ>();
+//			quadtree.get(new RectangleQ(-180, -90, 180, 90),"2014-10-01","2014-12-31",1, result);
+//			endTime = System.currentTimeMillis();
+//			System.out.println("Result size = " + result.size()+" Execution time "+ (endTime - startTime));
+//			for(PointQ p : result){
+//				System.out.println(p.value);
+//			}
 //			System.out.println("remove statistics from quadtree");
 //			quadtree.removeStatistics();
 //			if(quadtree.storeQuadToDisk(file)){

@@ -10,9 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.ServletException;
@@ -25,12 +23,13 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.umn.AdaptiveIndex.AQuadTree;
 import org.umn.conf.Common;
 import org.umn.index.PointQ;
+import org.umn.index.QuadTree;
 import org.umn.index.RectangleQ;
 
 import com.google.gson.stream.JsonWriter;
 
-public class HomeServer extends AbstractHandler {
-	static AQuadTree quadtree;
+public class OldHomeServer extends AbstractHandler {
+	static QuadTree quadtree;
 	static OutputStreamWriter outputWriter;
 
 
@@ -86,8 +85,8 @@ public class HomeServer extends AbstractHandler {
 			System.out.println("Query from "+queryMBR.toString()+"  Dates:"+startDate+"-"+endDate+" Level"
 			+level+" Keyword"+ keyword);
 			try {
-//				quadtree.get(queryMBR, startDate, endDate, Integer.parseInt(level), keyword, result);
-				quadtree.get(queryMBR, startDate, endDate, (Integer.parseInt(level)+1), keyword, result);
+				quadtree.get(queryMBR, startDate, endDate, (Integer.parseInt(level)+1), result);
+				
 				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -141,64 +140,22 @@ public class HomeServer extends AbstractHandler {
 
 	}
 	
-	
-	private static void buildQuadtree(String inputdir,String outputdir) throws NumberFormatException, IOException, ParseException{
-		long start = System.currentTimeMillis();
-		quadtree = new AQuadTree(new RectangleQ(-180, -79, 180, 83));
 
-		File data = new File(inputdir);
-		if (!data.exists()) {
-			System.out.println("Data folder doesn't exist");
-			return;
-		}
-//		int count = 0;
-
-		BufferedReader br = new BufferedReader(new InputStreamReader(
-				(new FileInputStream(data.getAbsoluteFile()))));
-		String line;
-		RectangleQ mbr = null;
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		Calendar calendar = Calendar.getInstance();
-		long starttime = System.currentTimeMillis();
-		while ((line = br.readLine()) != null) { 
-				String[] xy = line.substring(0, line.indexOf("\t")).split(",");
-				mbr = new RectangleQ(Double.parseDouble(xy[0]),
-						Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
-						Double.parseDouble(xy[3]));
-				String[] list = line.split("\t");
-				for (int j = 2; j < list.length; j++) {
-					String[] pointCount = list[j].split(",");
-					try {
-						int dayOfYear = Integer.parseInt(pointCount[0]);
-						calendar.set(Calendar.DAY_OF_YEAR, dayOfYear);
-						String formatDates = dateFormat.format(calendar.getTime());
-						PointQ point = mbr.getCenterPoint();
-						point.date = formatDates;
-						point.value = Integer.parseInt(pointCount[1]);
-						if(point.value != 0){
-							quadtree.insert(point);
-						}
-					} catch (IndexOutOfBoundsException e) {
-
-					}
-				}
-		}
-		System.out.println("Building index took in ms: "+ (System.currentTimeMillis()-starttime));
-//		quadtree.StoreRectanglesWKT(outputdir);
-	}
 
 	public static void main(String[] args) throws Exception {
-		Common conf = new Common();
-		conf.loadConfigFile();
-		buildQuadtree(conf.quadtreeinputFile,conf.quadtreeDir);
-		if (quadtree != null) {
+		long start = System.currentTimeMillis();
+		quadtree = new QuadTree(new RectangleQ(-180, -79, 180, 83),1);
+
+		File file = new File(System.getProperty("user.dir") + "/quadtree.dat");
+		boolean loadQuadToMemory = quadtree.loadQuadToMemory(file);
+		System.out.println("Building index took in ms: "+ (System.currentTimeMillis()-start));
+		if (loadQuadToMemory) {
 			System.out.println("loaded to memory successfully");
-			quadtree.StoreRectanglesToArrayText(conf.quadtreeDir);
 		} else {
 			System.out.println("Could not load to memory");
 		}
-		Server server = new Server(8095);
-		server.setHandler(new HomeServer());
+		Server server = new Server(8000);
+		server.setHandler(new OldHomeServer());
 		server.start();
 		server.join();
 	}

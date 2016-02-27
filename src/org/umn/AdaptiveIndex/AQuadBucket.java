@@ -19,7 +19,7 @@ public class AQuadBucket implements Serializable {
 	// Hash keywords
 	private AQPriorityQueue[] keywordsCount;
 	// cardinality
-	private int[] versionCount;
+	public int[] versionCount;
 
 	public AQuadBucket() {
 		// TODO Auto-generated constructor stub
@@ -184,6 +184,14 @@ public class AQuadBucket implements Serializable {
 
 		}
 		return 0;
+	}
+	
+	public String getdateFromDayofYer(int dayofYear){
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.DAY_OF_YEAR, dayofYear);
+		String formatDates = dateFormat.format(calendar.getTime());
+		return formatDates;
 	}
 
 	// public HashMap<String, Integer> getKeywords() {
