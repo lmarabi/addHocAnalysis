@@ -194,13 +194,17 @@ public class HomeServer extends AbstractHandler {
 		if (quadtree != null) {
 			System.out.println("loaded to memory successfully");
 			quadtree.StoreRectanglesToArrayText(conf.quadtreeDir);
+			System.out.println("Store mbrs successfully");
+			quadtree.StoreRectanglesWKT(conf.quadtreeDir);
+			System.out.println("Store wkt successfully");
 		} else {
 			System.out.println("Could not load to memory");
 		}
-		Server server = new Server(8095);
-		server.setHandler(new HomeServer());
-		server.start();
-		server.join();
+		System.out.println("Done successfully");
+//		Server server = new Server(8095);
+//		server.setHandler(new HomeServer());
+//		server.start();
+//		server.join();
 	}
 	
 
