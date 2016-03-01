@@ -3,17 +3,20 @@ package org.umn.AdaptiveIndex;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 //import java.util.HashMap;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
 
 import org.umn.index.RectangleQ;
 import org.umn.keyword.InvertedIndex;
+import org.umn.keyword.LuceneInvertedIndex;
 
 public class AQuadBucket implements Serializable {
 	// Hash keywords
@@ -26,9 +29,9 @@ public class AQuadBucket implements Serializable {
 		// HashMap<String, Integer>[] hashMaps = (HashMap<String, Integer>[])
 		// new HashMap<?,?>[366];
 		keywordsCount = new AQPriorityQueue[366];
-//		for (int i = 0; i < 366; i++) {
-//			keywordsCount[i] = null;
-//		}
+		// for (int i = 0; i < 366; i++) {
+		// keywordsCount[i] = null;
+		// }
 		versionCount = new int[366];
 	}
 
@@ -50,12 +53,12 @@ public class AQuadBucket implements Serializable {
 		}
 		return result;
 	}
-	
-	public void initilizeKeywordbucket(int i){
-		if(keywordsCount[i] == null){
+
+	public void initilizeKeywordbucket(int i) {
+		if (keywordsCount[i] == null) {
 			keywordsCount[i] = new AQPriorityQueue();
 		}
-		
+
 	}
 
 	/**
@@ -83,53 +86,77 @@ public class AQuadBucket implements Serializable {
 				// proper place in the queue.
 				keywordsCount[i].updateAQKeywords(temp, temp);
 			}
-			
-			exist = getCountFromChilds(node, i, word,exist);
-			if(exist.count > 0 ){
-				// update from existing children. 
+			// Try to finds in children for keywords.
+			exist = getCountFromChilds(node, i, word, exist);
+			if ((exist.count > 0) && (!keywordsCount[i].contains(word))) {
+				// update from existing children.
 				System.out.println(" Read From the cash vlaues.");
 				keywordsCount[i].add(new AQkeywords(word, exist.count));
-				// finds out rectangles outside the children boundaries. 
+				// finds out rectangles outside the children boundaries.
 				result += exist.count;
 			}
-			else{
-				// keyword doesn't exist in the AQtree , need to be query from
-				// the inverted index and then updates all leaves nodes.
-				System.out.println("Read from the disk");
-				HashMap<RectangleQ, Integer> keyvalue = InvertedIndex
-						.searchKeyword(word, node.spaceMbr, i,exist.mbrs);
-				// update the sum of these recatngles to this buckets
-				Iterator<Entry<RectangleQ, Integer>> it = keyvalue.entrySet()
-						.iterator();
-				while (it.hasNext()) {
-					Map.Entry<RectangleQ, Integer> entry = it.next();
-					node.InsertKeywords(word, i,
-							entry.getValue(),exist.mbrs);
-					result += entry.getValue();
-				}
+			// Usually check for the uncovered rectangles and not existed
+			// keywords.
+			List<RectangleQ> leaves = new ArrayList<RectangleQ>();
+			node.getAllInteresectedLeafs(node.spaceMbr, leaves);
+			List<RectangleQ> leavesTobeRead = new ArrayList<RectangleQ>();
+			missedRectangles(leaves, exist.mbrs, leavesTobeRead);
+			HashMap<RectangleQ, Integer> keyvalue = LuceneInvertedIndex
+					.searchKeyword(word, i, leavesTobeRead);
+			// update the sum of these recatngles to this buckets
+			Iterator<Entry<RectangleQ, Integer>> it = keyvalue.entrySet()
+					.iterator();
+			while (it.hasNext()) {
+				Map.Entry<RectangleQ, Integer> entry = it.next();
+				node.InsertKeywords(word, i, entry.getValue(), exist.mbrs);
+				result += entry.getValue();
+			}
+
+		}
+		return result;
+	}
+
+	/**
+	 * Return only the missing rectangles to read from the disk.
+	 * 
+	 * @param intersected
+	 * @param existed
+	 * @param result
+	 * @return
+	 */
+	private List<RectangleQ> missedRectangles(List<RectangleQ> intersected,
+			List<RectangleQ> existed, List<RectangleQ> result) {
+		for (RectangleQ mbr : intersected) {
+			if (!existed.contains(mbr)) {
+				result.add(mbr);
 			}
 		}
 		return result;
 	}
-	
-	public ExistRectangls getCountFromChilds(AQuadTree node, int day,String word, ExistRectangls existMbrs){
-		if(!node.hasChild){
-			if(node.bucket.keywordsCount[day].getEntry(word) != null ){
-				existMbrs.count += node.bucket.keywordsCount[day].getEntry(word).count;
-				existMbrs.mbrs.add(node.spaceMbr);
-			}
+
+	public ExistRectangls getCountFromChilds(AQuadTree node, int day,
+			String word, ExistRectangls existMbrs) {
+
+		if (node.bucket.keywordsCount[day].getEntry(word) != null) {
+			existMbrs.count += node.bucket.keywordsCount[day].getEntry(word).count;
+			existMbrs.mbrs.add(node.spaceMbr);
 		}
-		if(node.SW != null && node.SW.bucket != null && node.SW.bucket.keywordsCount[day] != null){
-			getCountFromChilds(node.SW, day, word,existMbrs);
+
+		if (node.SW != null && node.SW.bucket != null
+				&& node.SW.bucket.keywordsCount[day] != null) {
+			getCountFromChilds(node.SW, day, word, existMbrs);
 		}
-		if(node.SE != null && node.SE.bucket != null && node.SE.bucket.keywordsCount[day] != null){
-			getCountFromChilds(node.SE, day, word,existMbrs);
+		if (node.SE != null && node.SE.bucket != null
+				&& node.SE.bucket.keywordsCount[day] != null) {
+			getCountFromChilds(node.SE, day, word, existMbrs);
 		}
-		if(node.NW != null && node.NW.bucket != null && node.NW.bucket.keywordsCount[day] != null){
-			getCountFromChilds(node.NW, day, word,existMbrs);
+		if (node.NW != null && node.NW.bucket != null
+				&& node.NW.bucket.keywordsCount[day] != null) {
+			getCountFromChilds(node.NW, day, word, existMbrs);
 		}
-		if(node.NE != null && node.NE.bucket != null && node.NE.bucket.keywordsCount[day] != null){
-			getCountFromChilds(node.NE, day, word,existMbrs);
+		if (node.NE != null && node.NE.bucket != null
+				&& node.NE.bucket.keywordsCount[day] != null) {
+			getCountFromChilds(node.NE, day, word, existMbrs);
 		}
 		return existMbrs;
 	}
@@ -138,10 +165,10 @@ public class AQuadBucket implements Serializable {
 			throws ParseException {
 		this.versionCount[getDayYearNumber(day)] += count;
 	}
-	
-	public int getChildkeywords(int day,String keyword){
-		int result  = 0;
-		
+
+	public int getChildkeywords(int day, String keyword) {
+		int result = 0;
+
 		return result;
 	}
 
@@ -151,17 +178,16 @@ public class AQuadBucket implements Serializable {
 		if ((temp = this.keywordsCount[day].getEntry(keyword)) == null) {
 			this.keywordsCount[day].add(new AQkeywords(keyword, count));
 		} else {
-			AQkeywords newvalue = new AQkeywords(keyword,
-			(temp.count + count));
+			AQkeywords newvalue = new AQkeywords(keyword, (temp.count + count));
 			keywordsCount[day].updateAQKeywords(temp, newvalue);
-//			if (hasChild) {
-//				AQkeywords newvalue = new AQkeywords(keyword,
-//						(temp.count + count));
-//				keywordsCount[day].updateAQKeywords(temp, newvalue);
-//			} else {
-//				// do nothing as they are already inserted in the first outer if
-//				// statement
-//			}
+			// if (hasChild) {
+			// AQkeywords newvalue = new AQkeywords(keyword,
+			// (temp.count + count));
+			// keywordsCount[day].updateAQKeywords(temp, newvalue);
+			// } else {
+			// // do nothing as they are already inserted in the first outer if
+			// // statement
+			// }
 		}
 
 	}
@@ -185,8 +211,8 @@ public class AQuadBucket implements Serializable {
 		}
 		return 0;
 	}
-	
-	public String getdateFromDayofYer(int dayofYear){
+
+	public String getdateFromDayofYer(int dayofYear) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(Calendar.DAY_OF_YEAR, dayofYear);

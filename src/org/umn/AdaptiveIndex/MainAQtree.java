@@ -13,62 +13,54 @@ import org.umn.conf.Common;
 import org.umn.index.PointQ;
 import org.umn.index.QuadTree;
 import org.umn.index.RectangleQ;
+import org.umn.keyword.LuceneInvertedIndex;
 
 public class MainAQtree {
 	static AQuadTree quadtree;
 
 	public static void main(String[] args) throws Exception {
+		
+//		ConstructAQtree();
+		BuildKeywords();
+	}
+
+	public static void BuildKeywords() throws Exception {
+		Common conf = new Common();
+		Common.loadConfigFile();
+		quadtree = new AQuadTree(new RectangleQ(-180, -60, 180, 70));
+		long startTime, endTime, queryExec_time;
+		startTime = System.currentTimeMillis();
+		boolean loadQuadToMemory = quadtree.loadQuadToMemory(conf.quadtreeDir);
+		if (loadQuadToMemory) {
+			endTime = System.currentTimeMillis();
+			System.out.println("loaded to memory successfully time to import: "+ + (endTime - startTime));
+//			ArrayList<PointQ> result = new ArrayList<PointQ>();
+//			quadtree.get(new RectangleQ(102.27193199999994,-42.81557490220856,38.63911949999988,65.58343616151522), "2015-01-01",
+//					"2015-12-30", 3, "", result);
+//			
+//			System.out.println("Result size = " + result.size()
+//					+ " Execution time " + (endTime - startTime));
+//			for (PointQ p : result) {
+//				System.out.println(p.value);
+//			}
+			
+			
+			// Build the keyword index for each quadrant in the tree. 
+			LuceneInvertedIndex.buildIndex(conf.invertedIndexinputFile, conf.invertedIndexDir,quadtree);
+
+		} else {
+			System.out.println("Could not load to memory");
+		}
+	}
+
+	public static void ConstructAQtree()
+			throws NumberFormatException, IOException, ParseException {
 		Common conf = new Common();
 		conf.loadConfigFile();
-		ConstructAQtree(conf.quadtreeinputFile, conf.quadtreeDir);
-		 testQuery(conf.quadtreeDir);
-	}
-
-	public static void testQuery(String quadtreeDir) throws Exception {
-		 quadtree = new AQuadTree(new RectangleQ(-180, -90, 180, 90));
-//		boolean loadQuadToMemory = quadtree.loadQuadToMemory(quadtreeDir);
-//		if (loadQuadToMemory) {
-			System.out.println("loaded to memory successfully");
-			long startTime, endTime, queryExec_time;
-			startTime = System.currentTimeMillis();
-			ArrayList<PointQ> result = new ArrayList<PointQ>();
-			quadtree.get(new RectangleQ(102.27193199999994,-42.81557490220856,38.63911949999988,65.58343616151522), "2015-01-01",
-					"2015-12-30", 3, "", result);
-			endTime = System.currentTimeMillis();
-			System.out.println("Result size = " + result.size()
-					+ " Execution time " + (endTime - startTime));
-			for (PointQ p : result) {
-				System.out.println(p.value);
-			}
-			// System.out.println("remove statistics from quadtree");
-			// quadtree.removeStatistics();
-			// if(quadtree.storeQuadToDisk(file)){
-			// System.out.println("Stored successfully");
-			// result.clear();
-			// quadtree.StoreRectanglesWKT();
-			// quadtree.get(new RectangleQ(-180, -90, 180,
-			// 90),"2013-10-01","2013-10-16",1, result);
-			// endTime = System.currentTimeMillis();
-			// System.out.println("Result size = " +
-			// result.size()+" Execution time "+ (endTime - startTime));
-			// for(PointQ p : result){
-			// System.out.println(p.value);
-			// }
-			// }else{
-			// System.out.println("problem occure when saving quadtree to disk");
-			// }
-
-//		} else {
-//			System.out.println("Could not load to memory");
-//		}
-	}
-
-	public static void ConstructAQtree(String inputdir, String outputdir)
-			throws NumberFormatException, IOException, ParseException {
 		long start = System.currentTimeMillis();
-		quadtree = new AQuadTree(new RectangleQ(-180, -90, 180, 90));
+		quadtree = new AQuadTree(new RectangleQ(-180, -60, 180, 70));
 
-		File data = new File(inputdir);
+		File data = new File(conf.quadtreeinputFile);
 		if (!data.exists()) {
 			System.out.println("Data folder doesn't exist");
 			return;
@@ -99,19 +91,20 @@ public class MainAQtree {
 				}
 		}
 		System.out.println("Building index took in ms: "+ (System.currentTimeMillis()-starttime));
-//
-//		starttime = System.currentTimeMillis();
-//		boolean stored = quadtree.storeQuadToDisk(outputdir);
-//		System.out.println("Storing index took in ms: "+ (System.currentTimeMillis()-starttime));
-//		if (stored) {
-//			starttime = System.currentTimeMillis();
-//			quadtree.StoreRectanglesWKT(outputdir);
-//			quadtree.StoreRectanglesToArrayText(outputdir);
-//			System.out.println("Stored Successfully");
-//			
-//		} else {
-//			System.out.println("Error while Storing ");
-//		}
+
+		starttime = System.currentTimeMillis();
+		boolean stored = quadtree.storeQuadToDisk(conf.quadtreeDir);
+		
+		if (stored) {
+			System.out.println("Storing index took in ms: "+ (System.currentTimeMillis()-starttime));
+			starttime = System.currentTimeMillis();
+			quadtree.StoreRectanglesWKT(conf.quadtreeDir);
+			quadtree.StoreLeafsQuadrantsOnly(conf.quadtreeDir);
+			System.out.println("Stored Successfully");
+			
+		} else {
+			System.out.println("Error while Storing ");
+		}
 
 	}
 

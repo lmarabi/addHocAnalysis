@@ -29,6 +29,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.umn.AdaptiveIndex.AQuadTree;
 import org.umn.conf.Common;
 import org.umn.index.RectangleQ;
 
@@ -106,6 +107,34 @@ public class LuceneInvertedIndex {
 				+ (endtime - starttime));
 		return outputResult;
 	}
+	
+	
+	/**
+	 * Search inverted
+	 * 
+	 * @param keyword
+	 * @return
+	 * @throws Exception
+	 */
+	public static HashMap<RectangleQ, Integer> searchKeyword(String keyword,
+			int dayofYear, List<RectangleQ> queryleavesNode) throws Exception {
+		// ///////////
+		HashMap<RectangleQ, Integer> result = new HashMap<RectangleQ, Integer>();
+		Common conf = new Common();
+		conf.loadConfigFile();
+		long start = System.currentTimeMillis();
+		int count = 0;
+		for (RectangleQ mbr : queryleavesNode) {
+			System.out.println("Read inverted from the disk "+ mbr.toString());
+			count = readInvertedIndex(conf.invertedIndexDir, dayofYear,
+					keyword,mbr);
+				result.put(mbr, count);
+		}
+		
+		// }
+		// ///////////
+		return result;
+	}
 
 	/**
 	 * Search the inverted index. 
@@ -163,20 +192,27 @@ public class LuceneInvertedIndex {
 	 * @throws ParseException
 	 * @throws Exception
 	 */
-	public static boolean buildIndex(String file, String outputDir)
+	public static boolean buildIndex(String file, String outputDir,AQuadTree tree)
 			throws ParseException, Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(
 				(new FileInputStream(file))));
 		String line;
+		int count = 0; 
 		RectangleQ mbr = null;
 		long start = System.currentTimeMillis();
 		while ((line = br.readLine()) != null) {
+			count++;
 			String[] xy = line.substring(0, line.indexOf("\t")).split(",");
 			mbr = new RectangleQ(Double.parseDouble(xy[0]),
 					Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
 					Double.parseDouble(xy[3]));
 			String[] list = line.split("\t");
 			String time = list[1];
+			mbr = tree.getMaximumLeafNode(mbr.getCenterPoint());
+			if(mbr == null ){
+				continue;
+			}
+			System.out.println("Building inverted Index for: "+count);
 			Directory dir = FSDirectory.open(new File(outputDir + "/inverted/"
 					+ getDayYearNumber(time) + "=" + +mbr.x1 + "," + mbr.y1
 					+ "," + mbr.x2 + "," + mbr.y2));
@@ -184,7 +220,7 @@ public class LuceneInvertedIndex {
 			Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_46);
 			IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_46,
 					analyzer);
-			iwc.setOpenMode(OpenMode.CREATE);
+			iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
 			iwc.setRAMBufferSizeMB(2048.0);
 			IndexWriter writer = new IndexWriter(dir, iwc);
 			for (int j = 3; j < list.length; j++) {
@@ -196,6 +232,9 @@ public class LuceneInvertedIndex {
 				}
 			}
 			writer.close();
+			analyzer.close();
+			dir.close();
+			
 		}
 		long end = System.currentTimeMillis();
 		System.out.println("Execution time for Building index in ms:"

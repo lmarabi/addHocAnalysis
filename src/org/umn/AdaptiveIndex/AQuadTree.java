@@ -33,6 +33,7 @@ public class AQuadTree implements Serializable {
 	AQuadTree NW, NE, SE, SW, parent; // four subtrees
 	// OutputStreamWriter writer;
 	int counter = 0;
+	private static final long serialVersionUID = Long.parseLong("-5265544215767626938");
 
 	public AQuadTree(RectangleQ mbr) {
 		spaceMbr = mbr;
@@ -185,6 +186,7 @@ public class AQuadTree implements Serializable {
 			if (keywords == null || keywords.equals("")) {
 				p.value = this.bucket.getVersionCount(fromDate, toDate);
 			} else {
+				
 				p.value = this.bucket.getKeywordCount(fromDate, toDate,
 						keywords, this);
 			}// end if there is a keywords
@@ -266,6 +268,26 @@ public class AQuadTree implements Serializable {
 
 		}
 	}
+	
+	
+	private void printLeafNodesMBRS(AQuadTree node, OutputStreamWriter writer) throws IOException {
+		if (!node.hasChild) {
+			if (node.bucket != null) {
+				if (node.bucket.getTotalCount() > 0) {
+						writer.write(node.spaceMbr.x1 + "," + node.spaceMbr.y1
+								+ "," + node.spaceMbr.x2 + ","
+								+ node.spaceMbr.y2 + "\n");
+				}
+			}
+		} else {
+			printLeafNodesMBRS(node.SW, writer);
+			printLeafNodesMBRS(node.NW, writer);
+			printLeafNodesMBRS(node.NE, writer);
+			printLeafNodesMBRS(node.SE, writer);
+			writer.flush();
+
+		}
+	}
 
 	private void printAllNodes(AQuadTree node, OutputStreamWriter writer,
 			boolean isWKT) throws IOException {
@@ -276,6 +298,67 @@ public class AQuadTree implements Serializable {
 		printLeafNodes(node.NW, writer, isWKT);
 		printLeafNodes(node.NE, writer, isWKT);
 		printLeafNodes(node.SE, writer, isWKT);
+	}
+	
+	/***
+	 * This method return the maximum leaf quadrant in the tree that contains
+	 * a given points. This method is used to build the inverted index for each quadrants. 
+	 * @param point
+	 * @return
+	 */
+	public RectangleQ getMaximumLeafNode(PointQ point){
+		RectangleQ result = null; 
+		if (!this.hasChild && this.bucket != null) {
+			// found the maximum leaf node.
+			if(this.bucket.getTotalCount() > 0){
+				result = this.spaceMbr;
+				return result;
+			}
+		} else if (this.hasChild) {
+			if (this.NW != null && this.NW.spaceMbr.contains(point)) {
+				return this.NW.getMaximumLeafNode(point);
+			}
+			if (this.NE != null && this.NE.spaceMbr.contains(point)) {
+				return this.NE.getMaximumLeafNode(point);
+			}
+			if (this.SE != null && this.SE.spaceMbr.contains(point)) {
+				return this.SE.getMaximumLeafNode(point);
+			}
+			if (this.SW != null && this.SW.spaceMbr.contains(point)) {
+				return this.SW.getMaximumLeafNode(point);
+			}
+		}
+		return result;
+	}
+	
+	
+	/***
+	 * This method return all the leaves level of a quadrants. 
+	 * @param point
+	 * @return
+	 */
+	public List<RectangleQ> getAllInteresectedLeafs(RectangleQ mbr, List<RectangleQ> interesectedLeaves){
+		RectangleQ result = null; 
+		if (!this.hasChild && this.bucket != null) {
+			// found the maximum leaf node.
+			if(this.bucket.getTotalCount() > 0){
+				interesectedLeaves.add(this.spaceMbr);
+			}
+		} else if (this.hasChild) {
+			if (this.NW != null && this.NW.spaceMbr.isIntersected(mbr)) {
+				return this.NW.getAllInteresectedLeafs(mbr,interesectedLeaves);
+			}
+			if (this.NE != null && this.NE.spaceMbr.isIntersected(mbr)) {
+				return this.NE.getAllInteresectedLeafs(mbr,interesectedLeaves);
+			}
+			if (this.SE != null && this.SE.spaceMbr.isIntersected(mbr)) {
+				return this.SE.getAllInteresectedLeafs(mbr,interesectedLeaves);
+			}
+			if (this.SW != null && this.SW.spaceMbr.isIntersected(mbr)) {
+				return this.SW.getAllInteresectedLeafs(mbr,interesectedLeaves);
+			}
+		}
+		return interesectedLeaves;
 	}
 
 	/**
@@ -388,7 +471,7 @@ public class AQuadTree implements Serializable {
 		// this.insert(1);
 		// }
 		OutputStreamWriter writer = new OutputStreamWriter(
-				new FileOutputStream(outputdir + "/AQuadtree_mbrs.txt", false),
+				new FileOutputStream(outputdir + "/AQuadtree_mbrsCounts.txt", false),
 				"UTF-8");
 		// printAllNodes(this);
 		// writer.write("{");
@@ -397,6 +480,14 @@ public class AQuadTree implements Serializable {
 		writer.close();
 		// System.out.println("number of buckets in the leaves:"+counter+
 		// "estimated Size = "+((1.47*counter)/1024)+" MB");
+	}
+	
+	public void StoreLeafsQuadrantsOnly(String outputdir) throws IOException {
+		OutputStreamWriter writer = new OutputStreamWriter(
+				new FileOutputStream(outputdir + "/AQuadtree_mbrs.txt", false),
+				"UTF-8");
+		printLeafNodesMBRS(this, writer);
+		writer.close();
 	}
 
 }

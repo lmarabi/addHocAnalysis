@@ -11,7 +11,7 @@ public class MainInvertedIndex {
 		conf.loadConfigFile();
 		long start = System.currentTimeMillis();
 //		InvertedIndex.build(conf.invertedIndexinputFile, conf.invertedIndexDir);
-		LuceneInvertedIndex.buildIndex(conf.invertedIndexinputFile, conf.invertedIndexDir);
+//		LuceneInvertedIndex.buildIndex(conf.invertedIndexinputFile, conf.invertedIndexDir);
 		
 		long end = System.currentTimeMillis();
 		System.out.println("program end Time: " + (end - start));

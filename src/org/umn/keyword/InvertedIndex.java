@@ -147,42 +147,74 @@ public class InvertedIndex implements Serializable {
 	 * @throws Exception
 	 */
 	public static HashMap<RectangleQ, Integer> searchKeyword(String keyword,
-			RectangleQ queryMbr, int dayofYear, List<RectangleQ> existMBr)
-			throws Exception {
+			int dayofYear, List<RectangleQ> queryleavesNode) throws Exception {
 		// ///////////
 		HashMap<RectangleQ, Integer> result = new HashMap<RectangleQ, Integer>();
 		Common conf = new Common();
 		conf.loadConfigFile();
-		// BufferedReader br = new BufferedReader(new InputStreamReader(
-		// (new FileInputStream(conf.quadtree_mbrFile))));
-		// String line;
-		RectangleQ test = null;
-		int count = 0;
-		List<String> mbrs = listf(conf.invertedIndexDir);
+
+		
 		long start = System.currentTimeMillis();
-		// while ((line = br.readLine()) != null) {
-		for (String filename : mbrs) {
-			String[] file = filename.split("=");
-			if (file[0].equals(Integer.toString(dayofYear))) {
-				String[] xy = file[1].split(",");
-				test = new RectangleQ(Double.parseDouble(xy[0]),
-						Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
-						Double.parseDouble(xy[3]));
-				if ((!existMBr.contains(test)) && queryMbr.isIntersected(test)) {
-					InvertedIndex index = new InvertedIndex();
-					index.ReadFromDisk(test, dayofYear, conf.invertedIndexDir);
-					if (index.keywords.containsKey(keyword)) {
-						result.put(test, index.keywords.get(keyword));
-					} else {
-						result.put(test, 0);
-					}
-				}
+		for (RectangleQ mbr : queryleavesNode) {
+			System.out.println("Read inverted from the disk "+ mbr.toString());
+			InvertedIndex index = new InvertedIndex();
+			index.ReadFromDisk(mbr, dayofYear, conf.invertedIndexDir);
+			if (index.keywords.containsKey(keyword)) {
+				result.put(mbr, index.keywords.get(keyword));
+			} else {
+				result.put(mbr, 0);
 			}
 		}
+		
 		// }
 		// ///////////
 		return result;
 	}
+
+	// /**
+	// * Search inverted
+	// *
+	// * @param keyword
+	// * @return
+	// * @throws Exception
+	// */
+	// public static HashMap<RectangleQ, Integer> searchKeyword(String keyword,
+	// RectangleQ queryMbr, int dayofYear, List<RectangleQ> existMBr)
+	// throws Exception {
+	// // ///////////
+	// HashMap<RectangleQ, Integer> result = new HashMap<RectangleQ, Integer>();
+	// Common conf = new Common();
+	// conf.loadConfigFile();
+	// // BufferedReader br = new BufferedReader(new InputStreamReader(
+	// // (new FileInputStream(conf.quadtree_mbrFile))));
+	// // String line;
+	// RectangleQ test = null;
+	// int count = 0;
+	// List<String> mbrs = listf(conf.invertedIndexDir);
+	// long start = System.currentTimeMillis();
+	// // while ((line = br.readLine()) != null) {
+	// for (String filename : mbrs) {
+	// String[] file = filename.split("=");
+	// if (file[0].equals(Integer.toString(dayofYear))) {
+	// String[] xy = file[1].split(",");
+	// test = new RectangleQ(Double.parseDouble(xy[0]),
+	// Double.parseDouble(xy[1]), Double.parseDouble(xy[2]),
+	// Double.parseDouble(xy[3]));
+	// if ((!existMBr.contains(test)) && queryMbr.isIntersected(test)) {
+	// InvertedIndex index = new InvertedIndex();
+	// index.ReadFromDisk(test, dayofYear, conf.invertedIndexDir);
+	// if (index.keywords.containsKey(keyword)) {
+	// result.put(test, index.keywords.get(keyword));
+	// } else {
+	// result.put(test, 0);
+	// }
+	// }
+	// }
+	// }
+	// // }
+	// // ///////////
+	// return result;
+	// }
 
 	public static List<String> listf(String directoryName) {
 		File directory = new File(directoryName + "/inverted/");

@@ -10,9 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.ServletException;
@@ -32,7 +30,6 @@ import com.google.gson.stream.JsonWriter;
 public class HomeServer extends AbstractHandler {
 	static AQuadTree quadtree;
 	static OutputStreamWriter outputWriter;
-
 
 	@Override
 	public void handle(String s, Request baseRequest,
@@ -83,8 +80,23 @@ public class HomeServer extends AbstractHandler {
 			long startTime, endTime,queryExec_time;
 			startTime = System.currentTimeMillis();
 			ArrayList<PointQ> result = new ArrayList<PointQ>();
+			// Check for the input to avoid any bugs. 
+			if (!startDate.matches("\\d{2}-\\d{2}-\\d{4}")) {
+			    startDate = "2015-01-01";
+			}
+			if (!endDate.matches("\\d{2}-\\d{2}-\\d{4}")) {
+				endDate = "2015-01-01";
+			}
+			if(keyword.length() > 10){
+				keyword = keyword.substring(0, 10);
+			}
+			keyword.replace("\\'", "");
+			keyword.replace("\"", "");
+			// submit the query
+			
 			System.out.println("Query from "+queryMBR.toString()+"  Dates:"+startDate+"-"+endDate+" Level"
 			+level+" Keyword"+ keyword);
+			
 			try {
 //				quadtree.get(queryMBR, startDate, endDate, Integer.parseInt(level), keyword, result);
 				quadtree.get(queryMBR, startDate, endDate, (Integer.parseInt(level)+1), keyword, result);
@@ -191,13 +203,15 @@ public class HomeServer extends AbstractHandler {
 	public static void main(String[] args) throws Exception {
 		Common conf = new Common();
 		conf.loadConfigFile();
-		buildQuadtree(conf.quadtreeinputFile,conf.quadtreeDir);
-		if (quadtree != null) {
+		//buildQuadtree(conf.quadtreeinputFile,conf.quadtreeDir);
+		quadtree = new AQuadTree(new RectangleQ(-180, -60, 180, 70));
+		boolean loaded = quadtree.loadQuadToMemory(conf.quadtreeDir);
+		if (loaded) {
 			System.out.println("loaded to memory successfully");
 //			quadtree.StoreRectanglesToArrayText(conf.quadtreeDir);
 //			System.out.println("Store mbrs successfully");
-			quadtree.StoreRectanglesWKT(conf.quadtreeDir);
-			System.out.println("Store wkt successfully");
+//			quadtree.StoreRectanglesWKT(conf.quadtreeDir);
+//			System.out.println("Store wkt successfully");
 		} else {
 			System.out.println("Could not load to memory");
 		}
