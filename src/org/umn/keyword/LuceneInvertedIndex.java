@@ -64,6 +64,7 @@ public class LuceneInvertedIndex {
 							+ "," + mbr.x2 + "," + mbr.y2)));
 		} catch (IOException e1) {
 			e1.printStackTrace();
+			return 0;
 		}
 		IndexSearcher searcher = new IndexSearcher(reader);
 		Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_46);
@@ -91,8 +92,10 @@ public class LuceneInvertedIndex {
 
 			} catch (IOException e) {
 				e.printStackTrace();
+				return 0;
 			} catch (Exception e) {
 				e.printStackTrace();
+				return 0;
 			}
 			break;
 		}

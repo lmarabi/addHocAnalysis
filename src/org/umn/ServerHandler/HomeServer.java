@@ -94,8 +94,8 @@ public class HomeServer extends AbstractHandler {
 			keyword.replace("\"", "");
 			// submit the query
 			
-			System.out.println("Query from "+queryMBR.toString()+"  Dates:"+startDate+"-"+endDate+" Level"
-			+level+" Keyword"+ keyword);
+			System.out.println("Query mbr:"+queryMBR.toString()+" from:"+startDate+" to: "+endDate+" Level:"
+			+level+" Keyword:"+ keyword);
 			
 			try {
 //				quadtree.get(queryMBR, startDate, endDate, Integer.parseInt(level), keyword, result);
@@ -117,6 +117,7 @@ public class HomeServer extends AbstractHandler {
 			writer.beginArray();
 			for(PointQ p : result){
 				if (p.value > 0) {
+					System.out.println(p.x+","+p.y+"\t"+p.value);
 					writer.beginObject();
 					writer.name("x").value(p.x);
 					writer.name("y").value(p.y);

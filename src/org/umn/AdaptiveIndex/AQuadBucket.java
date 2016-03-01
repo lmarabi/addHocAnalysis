@@ -20,9 +20,10 @@ import org.umn.keyword.LuceneInvertedIndex;
 
 public class AQuadBucket implements Serializable {
 	// Hash keywords
-	private AQPriorityQueue[] keywordsCount;
+	public AQPriorityQueue[] keywordsCount;
 	// cardinality
 	public int[] versionCount;
+	private static final long serialVersionUID = Long.parseLong("-3143011700429869092");
 
 	public AQuadBucket() {
 		// TODO Auto-generated constructor stub
@@ -74,6 +75,7 @@ public class AQuadBucket implements Serializable {
 			AQuadTree node) throws Exception {
 		int result = 0;
 		ExistRectangls exist = new ExistRectangls();
+		boolean inCash = false;
 		int from = this.getDayYearNumber(fromdate);
 		int to = this.getDayYearNumber(todate);
 		for (int i = from; i <= to; i++) {
@@ -84,32 +86,35 @@ public class AQuadBucket implements Serializable {
 				result += temp.count;
 				// this update so we can put the the keyword object in the
 				// proper place in the queue.
+				inCash = true;
 				keywordsCount[i].updateAQKeywords(temp, temp);
 			}
-			// Try to finds in children for keywords.
-			exist = getCountFromChilds(node, i, word, exist);
-			if ((exist.count > 0) && (!keywordsCount[i].contains(word))) {
-				// update from existing children.
-				System.out.println(" Read From the cash vlaues.");
-				keywordsCount[i].add(new AQkeywords(word, exist.count));
-				// finds out rectangles outside the children boundaries.
-				result += exist.count;
-			}
-			// Usually check for the uncovered rectangles and not existed
-			// keywords.
-			List<RectangleQ> leaves = new ArrayList<RectangleQ>();
-			node.getAllInteresectedLeafs(node.spaceMbr, leaves);
-			List<RectangleQ> leavesTobeRead = new ArrayList<RectangleQ>();
-			missedRectangles(leaves, exist.mbrs, leavesTobeRead);
-			HashMap<RectangleQ, Integer> keyvalue = LuceneInvertedIndex
-					.searchKeyword(word, i, leavesTobeRead);
-			// update the sum of these recatngles to this buckets
-			Iterator<Entry<RectangleQ, Integer>> it = keyvalue.entrySet()
-					.iterator();
-			while (it.hasNext()) {
-				Map.Entry<RectangleQ, Integer> entry = it.next();
-				node.InsertKeywords(word, i, entry.getValue(), exist.mbrs);
-				result += entry.getValue();
+			if (!inCash) {
+				// Try to finds in children for keywords.
+				exist = getCountFromChilds(node, i, word, exist);
+				if ((exist.count > 0) && (!keywordsCount[i].contains(word))) {
+					// update from existing children.
+					System.out.println(" Read From the cash vlaues.");
+					keywordsCount[i].add(new AQkeywords(word, exist.count));
+					// finds out rectangles outside the children boundaries.
+					result += exist.count;
+				}
+				// Usually check for the uncovered rectangles and not existed
+				// keywords.
+				List<RectangleQ> leaves = new ArrayList<RectangleQ>();
+				node.getAllInteresectedLeafs(node.spaceMbr, leaves);
+				List<RectangleQ> leavesTobeRead = new ArrayList<RectangleQ>();
+				missedRectangles(leaves, exist.mbrs, leavesTobeRead);
+				HashMap<RectangleQ, Integer> keyvalue = LuceneInvertedIndex
+						.searchKeyword(word, i, leavesTobeRead);
+				// update the sum of these recatngles to this buckets
+				Iterator<Entry<RectangleQ, Integer>> it = keyvalue.entrySet()
+						.iterator();
+				while (it.hasNext()) {
+					Map.Entry<RectangleQ, Integer> entry = it.next();
+					node.InsertKeywords(word, i, entry.getKey() ,entry.getValue());
+					result += entry.getValue();
+				}
 			}
 
 		}
@@ -172,22 +177,13 @@ public class AQuadBucket implements Serializable {
 		return result;
 	}
 
-	public void setVersionKeywords(int day, String keyword, int count,
-			boolean hasChild) throws ParseException {
+	public void setVersionKeywords(int day, String keyword, int count) throws ParseException {
 		AQkeywords temp;
 		if ((temp = this.keywordsCount[day].getEntry(keyword)) == null) {
 			this.keywordsCount[day].add(new AQkeywords(keyword, count));
 		} else {
 			AQkeywords newvalue = new AQkeywords(keyword, (temp.count + count));
 			keywordsCount[day].updateAQKeywords(temp, newvalue);
-			// if (hasChild) {
-			// AQkeywords newvalue = new AQkeywords(keyword,
-			// (temp.count + count));
-			// keywordsCount[day].updateAQKeywords(temp, newvalue);
-			// } else {
-			// // do nothing as they are already inserted in the first outer if
-			// // statement
-			// }
 		}
 
 	}
