@@ -209,6 +209,7 @@ public class QuadTree implements Serializable {
 	private void printLeafNodes(QuadTree node, OutputStreamWriter writer, boolean isWKT)
 			throws IOException {
 		if (!node.hasChild) {
+			if(node.bucket.getTotalCount() > 0){
 			if(isWKT){
 				writer.write(toWKT(node.spaceMbr) + "\t" + node.level + "\t"
 						+ node.bucket.getTotalCount() + "\n");
@@ -218,16 +219,17 @@ public class QuadTree implements Serializable {
 				writer.write(node.spaceMbr.x1+","+node.spaceMbr.y1+","+node.spaceMbr.x2+","+node.spaceMbr.y2+"\t");
 				for(int i=0;i<366;i++){
 					try {
-						writer.write("\t"+i+","+node.bucket.getVersionCount(String.valueOf(i), ""));
+						writer.write("\t"+node.bucket.getdateFromDayofYer(i)+","+node.bucket.getVersionCount(node.bucket.getdateFromDayofYer(i), node.bucket.getdateFromDayofYer(i)));
 					} catch (ParseException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
 				writer.write("\n");
+				writer.flush();
 				
 			}
-			
+			}
 			// System.out.println(counter + "\t" + node.spaceMbr.toString());
 		} else {
 			printLeafNodes(node.SW, writer,isWKT);
@@ -345,7 +347,7 @@ public class QuadTree implements Serializable {
 		// }
 		OutputStreamWriter writer = new OutputStreamWriter(
 				new FileOutputStream(System.getProperty("user.dir")
-						+ "/viso_quad.WKT", false), "UTF-8");
+						+ "/../dataset/addHoc/versionofQuadTree/2015/viso_quad.WKT", false), "UTF-8");
 		// printAllNodes(this);
 		writer.write("Id\tMBR\tDepth\tCounts\n");
 		printLeafNodes(this, writer,true);

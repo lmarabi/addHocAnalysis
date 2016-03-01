@@ -151,10 +151,13 @@ public class OldHomeServer extends AbstractHandler {
 		System.out.println("Building index took in ms: "+ (System.currentTimeMillis()-start));
 		if (loadQuadToMemory) {
 			System.out.println("loaded to memory successfully");
+			quadtree.StoreRectanglesToArrayText();
+			quadtree.StoreRectanglesWKT();
 		} else {
 			System.out.println("Could not load to memory");
 		}
-		Server server = new Server(8000);
+		//Server server = new Server(8000);// Alkhwarizmi - server.
+		Server server = new Server(8095); // local host.
 		server.setHandler(new OldHomeServer());
 		server.start();
 		server.join();

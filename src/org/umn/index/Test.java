@@ -124,15 +124,23 @@ public class Test {
 	public static void QueryQuadTree() throws IOException, ParseException {
 		QuadTree quadtree = new QuadTree(new RectangleQ(-180, -90, 180, 90),
 				1);
+		long startTime, endTime,queryExec_time;
 		File file = new File(System.getProperty("user.dir") + "/../dataset/addHoc/versionofQuadTree/2015/quadtree.dat");
+		startTime = System.currentTimeMillis();
 		boolean loadQuadToMemory = quadtree.loadQuadToMemory(file);
+		endTime = System.currentTimeMillis();
 		if (loadQuadToMemory) {
-			System.out.println("loaded to memory successfully");
-			quadtree.StoreRectanglesToArrayText();
-			//quadtree.storeQuadToDisk(file);
-			System.out.println("stored successfully");
-//			long startTime, endTime,queryExec_time;
+			System.out.println("loaded to memory successfully "+" Execution time "+ (endTime - startTime));
 //			startTime = System.currentTimeMillis();
+//			quadtree.StoreRectanglesWKT();
+//			endTime = System.currentTimeMillis();
+//			System.out.println("stored WKT successfully to /dataset/addHoc/versionofQuadTree/2015/"+" Execution time "+ (endTime - startTime));
+			startTime = System.currentTimeMillis();
+			quadtree.StoreRectanglesToArrayText();
+			endTime = System.currentTimeMillis();
+			System.out.println("stored MBRs successfully /dataset/addHoc/versionofQuadTree/2015/"+" Execution time "+ (endTime - startTime));
+
+
 //			ArrayList<PointQ> result = new ArrayList<PointQ>();
 //			quadtree.get(new RectangleQ(-180, -90, 180, 90),"2014-10-01","2014-12-31",1, result);
 //			endTime = System.currentTimeMillis();
@@ -147,8 +155,7 @@ public class Test {
 //				result.clear();
 //				quadtree.StoreRectanglesWKT();
 //				quadtree.get(new RectangleQ(-180, -90, 180, 90),"2013-10-01","2013-10-16",1, result);
-//				endTime = System.currentTimeMillis();
-//				System.out.println("Result size = " + result.size()+" Execution time "+ (endTime - startTime));
+
 //				for(PointQ p : result){
 //					System.out.println(p.value);
 //				}
@@ -166,7 +173,6 @@ public class Test {
 			IOException, ParseException, InterruptedException {
 		//String path = args[0];
 		//buildQuadTRee(path);
-		System.out.println("execute query start");
 		QueryQuadTree();
 
 	}

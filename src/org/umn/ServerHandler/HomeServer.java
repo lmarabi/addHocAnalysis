@@ -144,7 +144,7 @@ public class HomeServer extends AbstractHandler {
 	
 	private static void buildQuadtree(String inputdir,String outputdir) throws NumberFormatException, IOException, ParseException{
 		long start = System.currentTimeMillis();
-		quadtree = new AQuadTree(new RectangleQ(-180, -79, 180, 83));
+		quadtree = new AQuadTree(new RectangleQ(-180, -60, 180, 60));
 
 		File data = new File(inputdir);
 		if (!data.exists()) {
@@ -157,8 +157,8 @@ public class HomeServer extends AbstractHandler {
 				(new FileInputStream(data.getAbsoluteFile()))));
 		String line;
 		RectangleQ mbr = null;
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		Calendar calendar = Calendar.getInstance();
+//		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//		Calendar calendar = Calendar.getInstance();
 		long starttime = System.currentTimeMillis();
 		while ((line = br.readLine()) != null) { 
 				String[] xy = line.substring(0, line.indexOf("\t")).split(",");
@@ -169,13 +169,14 @@ public class HomeServer extends AbstractHandler {
 				for (int j = 2; j < list.length; j++) {
 					String[] pointCount = list[j].split(",");
 					try {
-						int dayOfYear = Integer.parseInt(pointCount[0]);
-						calendar.set(Calendar.DAY_OF_YEAR, dayOfYear);
-						String formatDates = dateFormat.format(calendar.getTime());
+//						int dayOfYear = Integer.parseInt(pointCount[0]);
+//						calendar.set(Calendar.DAY_OF_YEAR, dayOfYear);
+//						String formatDates = dateFormat.format(calendar.getTime());
 						PointQ point = mbr.getCenterPoint();
-						point.date = formatDates;
+//						point.date = formatDates;
+						point.date = pointCount[0];
 						point.value = Integer.parseInt(pointCount[1]);
-						if(point.value != 0){
+						if(point.value > 0){
 							quadtree.insert(point);
 						}
 					} catch (IndexOutOfBoundsException e) {
@@ -193,18 +194,18 @@ public class HomeServer extends AbstractHandler {
 		buildQuadtree(conf.quadtreeinputFile,conf.quadtreeDir);
 		if (quadtree != null) {
 			System.out.println("loaded to memory successfully");
-			quadtree.StoreRectanglesToArrayText(conf.quadtreeDir);
-			System.out.println("Store mbrs successfully");
+//			quadtree.StoreRectanglesToArrayText(conf.quadtreeDir);
+//			System.out.println("Store mbrs successfully");
 			quadtree.StoreRectanglesWKT(conf.quadtreeDir);
 			System.out.println("Store wkt successfully");
 		} else {
 			System.out.println("Could not load to memory");
 		}
 		System.out.println("Done successfully");
-//		Server server = new Server(8095);
-//		server.setHandler(new HomeServer());
-//		server.start();
-//		server.join();
+		Server server = new Server(8095);
+		server.setHandler(new HomeServer());
+		server.start();
+		server.join();
 	}
 	
 

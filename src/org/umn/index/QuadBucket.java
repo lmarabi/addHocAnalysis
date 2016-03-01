@@ -16,6 +16,7 @@ public class QuadBucket implements Serializable{
 //	private HashMap<String, Integer> keywords;
 	// cardinality 
 	private int[] versionCount; 
+	private static final long serialVersionUID = Long.parseLong("6370864004145947726");
 	
 	public QuadBucket() {
 		// TODO Auto-generated constructor stub
@@ -39,6 +40,14 @@ public class QuadBucket implements Serializable{
 		}
 //		result = versionCount[Integer.parseInt(fromdate)];
 		return result;
+	}
+	
+	public String getdateFromDayofYer(int dayofYear){
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.DAY_OF_YEAR, dayofYear);
+		String formatDates = dateFormat.format(calendar.getTime());
+		return formatDates;
 	}
 	
 	

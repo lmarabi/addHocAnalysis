@@ -139,7 +139,7 @@ public class AQuadTree implements Serializable {
 			} else {
 				// Number of node exceed the capacity split and then reqrrange
 				// the Points
-				if (this.level < 16) {
+				if (this.level < 16) {//16
 					this.split(p);
 					this.bucket.incrementtVersionCount(p.date, p.value);
 					this.hasChild = true;
@@ -235,11 +235,13 @@ public class AQuadTree implements Serializable {
 			boolean isWKT) throws IOException {
 		if (!node.hasChild) {
 			if (node.bucket != null) {
-				if (isWKT) {
-					writer.write(toWKT(node.spaceMbr) + "\t" + node.level
-							+ "\t" + node.bucket.getTotalCount() + "\n");
-				} else {
-					if (node.bucket.getTotalCount() > 0) {
+				if (node.bucket.getTotalCount() > 0) {
+					if (isWKT) {
+
+						writer.write(toWKT(node.spaceMbr) + "\t" + node.level
+								+ "\t" + node.bucket.getTotalCount() + "\n");
+
+					} else {
 						writer.write(node.spaceMbr.x1 + "," + node.spaceMbr.y1
 								+ "," + node.spaceMbr.x2 + ","
 								+ node.spaceMbr.y2 + "\t");
