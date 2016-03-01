@@ -20,8 +20,8 @@ public class MainAQtree {
 
 	public static void main(String[] args) throws Exception {
 		
-//		ConstructAQtree();
-		BuildKeywords();
+		ConstructAQtree();
+//		BuildKeywords();
 	}
 
 	public static void BuildKeywords() throws Exception {
@@ -54,7 +54,7 @@ public class MainAQtree {
 	}
 
 	public static void ConstructAQtree()
-			throws NumberFormatException, IOException, ParseException {
+			throws Exception {
 		Common conf = new Common();
 		conf.loadConfigFile();
 		long start = System.currentTimeMillis();
@@ -84,7 +84,9 @@ public class MainAQtree {
 						PointQ point = mbr.getCenterPoint();
 						point.date = pointCount[0];
 						point.value = Integer.parseInt(pointCount[1]);
-						quadtree.insert(point);
+						if(point.value > 0){
+							quadtree.insert(point);
+						}
 					} catch (IndexOutOfBoundsException e) {
 
 					}
@@ -94,13 +96,17 @@ public class MainAQtree {
 
 		starttime = System.currentTimeMillis();
 		boolean stored = quadtree.storeQuadToDisk(conf.quadtreeDir);
-		
+		System.out.println("Storing index took in ms: "+ (System.currentTimeMillis()-starttime));
 		if (stored) {
-			System.out.println("Storing index took in ms: "+ (System.currentTimeMillis()-starttime));
 			starttime = System.currentTimeMillis();
 			quadtree.StoreRectanglesWKT(conf.quadtreeDir);
+			System.out.println("Storing WKT took in ms: "+ (System.currentTimeMillis()-starttime));
+			starttime = System.currentTimeMillis();
+			LuceneInvertedIndex.buildIndex(conf.invertedIndexinputFile, conf.invertedIndexDir,quadtree);
+			System.out.println("build inverted index took in ms: "+ (System.currentTimeMillis()-starttime));
+			starttime = System.currentTimeMillis();
 			quadtree.StoreLeafsQuadrantsOnly(conf.quadtreeDir);
-			System.out.println("Stored Successfully");
+			System.out.println("Storing index took in ms: "+ (System.currentTimeMillis()-starttime));
 			
 		} else {
 			System.out.println("Error while Storing ");
