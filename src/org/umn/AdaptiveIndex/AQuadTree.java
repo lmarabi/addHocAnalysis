@@ -224,6 +224,71 @@ public class AQuadTree implements Serializable {
 		// }
 		return values;
 	}
+	
+	
+	/***
+	 * This method return all the leaves level of a quadrants. 
+	 * @param point
+	 * @return
+	 */
+	public List<RectangleQ> getAllInteresectedLeafs(RectangleQ mbr, List<RectangleQ> interesectedLeaves){
+		RectangleQ result = null; 
+		if (!this.hasChild && this.bucket != null && this.spaceMbr.isIntersected(mbr)) {
+			// found the maximum leaf node.
+//			if(this.bucket.getTotalCount() > 0){
+				interesectedLeaves.add(this.spaceMbr);
+//			}
+		} else if (this.hasChild) {
+			if (this.NW != null) {
+				this.NW.getAllInteresectedLeafs(mbr,interesectedLeaves);
+			}
+			if (this.NE != null) {
+				 this.NE.getAllInteresectedLeafs(mbr,interesectedLeaves);
+			}
+			if (this.SE != null) {
+				 this.SE.getAllInteresectedLeafs(mbr,interesectedLeaves);
+			}
+			if (this.SW != null) {
+				 this.SW.getAllInteresectedLeafs(mbr,interesectedLeaves);
+			}
+		}
+		return interesectedLeaves;
+	}
+	
+	/**
+	 * This method will return exist rectangles with keyword value.
+	 * @param day
+	 * @param word
+	 * @param existMbrs
+	 * @return
+	 */
+	public ExistRectangls getCountFromChilds( int day,
+			String word, ExistRectangls existMbrs) {
+
+		if (this.bucket.keywordsCount[day].getEntry(word) != null) {
+			existMbrs.count += this.bucket.keywordsCount[day].getEntry(word).count;
+			System.out.println("Children "+this.spaceMbr);
+			existMbrs.mbrs.add(this.spaceMbr);
+		}
+
+		if (this.SW != null && this.SW.bucket != null
+				&& this.SW.bucket.keywordsCount[day] != null) {
+			this.SW.getCountFromChilds( day, word, existMbrs);
+		}
+		if (this.SE != null && this.SE.bucket != null
+				&& this.SE.bucket.keywordsCount[day] != null) {
+			this.SE.getCountFromChilds(day, word, existMbrs);
+		}
+		if (this.NW != null && this.NW.bucket != null
+				&& this.NW.bucket.keywordsCount[day] != null) {
+			this.NW.getCountFromChilds( day, word, existMbrs);
+		}
+		if (this.NE != null && this.NE.bucket != null
+				&& this.NE.bucket.keywordsCount[day] != null) {
+			this.NE.getCountFromChilds( day, word, existMbrs);
+		}
+		return existMbrs;
+	}
 
 	/**
 	 * This method redistribute the points between the 4 new quadrant child
@@ -338,34 +403,7 @@ public class AQuadTree implements Serializable {
 	}
 	
 	
-	/***
-	 * This method return all the leaves level of a quadrants. 
-	 * @param point
-	 * @return
-	 */
-	public List<RectangleQ> getAllInteresectedLeafs(RectangleQ mbr, List<RectangleQ> interesectedLeaves){
-		RectangleQ result = null; 
-		if (!this.hasChild && this.bucket != null) {
-			// found the maximum leaf node.
-			if(this.bucket.getTotalCount() > 0){
-				interesectedLeaves.add(this.spaceMbr);
-			}
-		} else if (this.hasChild) {
-			if (this.NW != null && this.NW.spaceMbr.isIntersected(mbr)) {
-				return this.NW.getAllInteresectedLeafs(mbr,interesectedLeaves);
-			}
-			if (this.NE != null && this.NE.spaceMbr.isIntersected(mbr)) {
-				return this.NE.getAllInteresectedLeafs(mbr,interesectedLeaves);
-			}
-			if (this.SE != null && this.SE.spaceMbr.isIntersected(mbr)) {
-				return this.SE.getAllInteresectedLeafs(mbr,interesectedLeaves);
-			}
-			if (this.SW != null && this.SW.spaceMbr.isIntersected(mbr)) {
-				return this.SW.getAllInteresectedLeafs(mbr,interesectedLeaves);
-			}
-		}
-		return interesectedLeaves;
-	}
+	
 
 	/**
 	 * This method remove statistics and keep the just the MBRs' boundary of the

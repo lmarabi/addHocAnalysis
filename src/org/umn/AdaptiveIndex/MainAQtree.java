@@ -93,7 +93,7 @@ public class MainAQtree {
 				}
 		}
 		System.out.println("Building index took in ms: "+ (System.currentTimeMillis()-starttime));
-
+		br.close();
 		starttime = System.currentTimeMillis();
 		boolean stored = quadtree.storeQuadToDisk(conf.quadtreeDir);
 		System.out.println("Storing index took in ms: "+ (System.currentTimeMillis()-starttime));

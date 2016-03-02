@@ -91,7 +91,7 @@ public class AQuadBucket implements Serializable {
 			}
 			if (!inCash) {
 				// Try to finds in children for keywords.
-				exist = getCountFromChilds(node, i, word, exist);
+				node.getCountFromChilds(i, word, exist);
 				if ((exist.count > 0) && (!keywordsCount[i].contains(word))) {
 					// update from existing children.
 					System.out.println(" Read From the cash vlaues.");
@@ -139,32 +139,7 @@ public class AQuadBucket implements Serializable {
 		return result;
 	}
 
-	public ExistRectangls getCountFromChilds(AQuadTree node, int day,
-			String word, ExistRectangls existMbrs) {
-
-		if (node.bucket.keywordsCount[day].getEntry(word) != null) {
-			existMbrs.count += node.bucket.keywordsCount[day].getEntry(word).count;
-			existMbrs.mbrs.add(node.spaceMbr);
-		}
-
-		if (node.SW != null && node.SW.bucket != null
-				&& node.SW.bucket.keywordsCount[day] != null) {
-			getCountFromChilds(node.SW, day, word, existMbrs);
-		}
-		if (node.SE != null && node.SE.bucket != null
-				&& node.SE.bucket.keywordsCount[day] != null) {
-			getCountFromChilds(node.SE, day, word, existMbrs);
-		}
-		if (node.NW != null && node.NW.bucket != null
-				&& node.NW.bucket.keywordsCount[day] != null) {
-			getCountFromChilds(node.NW, day, word, existMbrs);
-		}
-		if (node.NE != null && node.NE.bucket != null
-				&& node.NE.bucket.keywordsCount[day] != null) {
-			getCountFromChilds(node.NE, day, word, existMbrs);
-		}
-		return existMbrs;
-	}
+	
 
 	public void incrementtVersionCount(String day, int count)
 			throws ParseException {
