@@ -14,3 +14,15 @@ The first version will cover the entire 2015 twitter dataset.
 levesLevel: Only quadtree leves contains the inverted index, The base line implementation From C.Ynsin paper. 
 newIdea: The keyword search is materialized based on a temporal keyword inverted index on the disk. 
 
+
+
+## How to create branch and push. 
+
+--First to create a branch then you need to create a branch using the following command line--
+$git branch <nameofBranch>
+
+--Second to work on a spesific branch then you need to check out the branch--
+$git checkout <nameofBranch>
+
+--Third to submit changes of a branch then you need to do the following--
+$git push -u origin <nameofBranch>
