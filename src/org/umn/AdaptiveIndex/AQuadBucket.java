@@ -46,12 +46,10 @@ public class AQuadBucket implements Serializable {
 	 * @return
 	 * @throws ParseException
 	 */
-	public int getVersionCount(String fromdate, String todate)
+	public int getVersionCount(int fromdate, int todate)
 			throws ParseException {
 		int result = 0;
-		int from = this.getDayYearNumber(fromdate);
-		int to = this.getDayYearNumber(todate);
-		for (int i = from; i <= to; i++) {
+		for (int i = fromdate; i <= todate; i++) {
 			result += versionCount[i];
 		}
 		return result;
@@ -73,14 +71,11 @@ public class AQuadBucket implements Serializable {
 	 * @return 0 if doesn't exist , otherwise return > 0
 	 * @throws Exception
 	 */
-	public int getKeywordCount(String fromdate, String todate, String word,
+	public int getKeywordCount(int fromdate, int todate, String word,
 			AQuadTree node) throws Exception {
 		int result = 0;
 		ExistRectangls exist = new ExistRectangls();
-		boolean inCash = false;
-		int from = this.getDayYearNumber(fromdate);
-		int to = this.getDayYearNumber(todate);
-		for (int i = from; i <= to; i++) {
+		for (int i = fromdate; i <= todate; i++) {
 			initilizeKeywordbucket(i);
 			AQkeywords temp;
 			if ((temp = keywordsCount[i].getEntry(word)) != null) {
@@ -88,36 +83,35 @@ public class AQuadBucket implements Serializable {
 				result += temp.count;
 				// this update so we can put the the keyword object in the
 				// proper place in the queue.
-				inCash = true;
 				keywordsCount[i].updateAQKeywords(temp, temp);
 			}
-			if (!inCash) {
-				// Try to finds in children for keywords.
-				node.getCountFromChilds(i, word, exist);
-				if ((exist.count > 0) && (!keywordsCount[i].contains(word))) {
-					// update from existing children.
-					System.out.println(" Read From the cash vlaues.");
-					keywordsCount[i].add(new AQkeywords(word, exist.count));
-					// finds out rectangles outside the children boundaries.
-					result += exist.count;
-				}
-				// Usually check for the uncovered rectangles and not existed
-				// keywords.
-				List<RectangleQ> leaves = new ArrayList<RectangleQ>();
-				node.getAllInteresectedLeafs(node.spaceMbr, leaves);
-				List<RectangleQ> leavesTobeRead = new ArrayList<RectangleQ>();
-				missedRectangles(leaves, exist.mbrs, leavesTobeRead);
-				List<PointQ> locations = DayIndex
-						.searchKeyword(word, i);
-				// update the sum of these recatngles to this buckets
-				for(PointQ point : locations){
-					node.InsertKeywords(word, i, point);
-				}
-				
-					
-					
-				
-			}
+//			if (!inCash) {
+//				// Try to finds in children for keywords.
+//				node.getCountFromChilds(i, word, exist);
+//				if ((exist.count > 0) && (!keywordsCount[i].contains(word))) {
+//					// update from existing children.
+//					System.out.println(" Read From the cash vlaues.");
+//					keywordsCount[i].add(new AQkeywords(word, exist.count));
+//					// finds out rectangles outside the children boundaries.
+//					result += exist.count;
+//				}
+//				// Usually check for the uncovered rectangles and not existed
+//				// keywords.
+//				List<RectangleQ> leaves = new ArrayList<RectangleQ>();
+//				node.getAllInteresectedLeafs(node.spaceMbr, leaves);
+//				List<RectangleQ> leavesTobeRead = new ArrayList<RectangleQ>();
+//				missedRectangles(leaves, exist.mbrs, leavesTobeRead);
+//				List<PointQ> locations = DayIndex
+//						.searchKeyword(word, i);
+//				// update the sum of these recatngles to this buckets
+//				for(PointQ point : locations){
+//					node.InsertKeywords(word, i, point);
+//				}
+//				
+//					
+//					
+//				
+//			}
 
 		}
 		return result;
@@ -173,7 +167,7 @@ public class AQuadBucket implements Serializable {
 		return result;
 	}
 
-	private int getDayYearNumber(String day) throws ParseException {
+	public static int getDayYearNumber(String day) throws ParseException {
 		try {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 			Calendar cal = Calendar.getInstance();

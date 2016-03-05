@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.umn.index.PointQ;
 import org.umn.index.RectangleQ;
+import org.umn.keyword.DayIndex;
 
 /***
  * This class Build the quadtree after the hadoop analysis phase. The
@@ -33,7 +34,8 @@ public class AQuadTree implements Serializable {
 	AQuadTree NW, NE, SE, SW, parent; // four subtrees
 	// OutputStreamWriter writer;
 	int counter = 0;
-	private static final long serialVersionUID = Long.parseLong("-5265544215767626938");
+	private static final long serialVersionUID = Long
+			.parseLong("-5265544215767626938");
 
 	public AQuadTree(RectangleQ mbr) {
 		spaceMbr = mbr;
@@ -86,36 +88,35 @@ public class AQuadTree implements Serializable {
 	 * @param mapLevel
 	 * @throws ParseException
 	 */
-	public void InsertKeywords(String keyword, int day,
-			PointQ point) throws ParseException {
+	public void InsertKeywords(String keyword, int day, PointQ point)
+			throws ParseException {
 		// check if there is a child or not before insert
 		// First case if node doesn't have child
-		if (!this.spaceMbr.contains(point)){
+		if (!this.spaceMbr.contains(point)) {
 			return;
 		}
 		if (this.bucket != null) {
-			if(this.bucket.keywordsCount[day] == null){
+			if (this.bucket.keywordsCount[day] == null) {
 				this.bucket.initilizeKeywordbucket(day);
 			}
 			this.bucket.setVersionKeywords(day, keyword);
-			//System.out.println("Insert to level:"+this.level+" with MBR:"+this.spaceMbr);
-			if(!this.hasChild){
+			// System.out.println("Insert to level:"+this.level+" with MBR:"+this.spaceMbr);
+			if (!this.hasChild) {
 				return;
 			}
-			if(this.SW != null)
+			if (this.SW != null)
 				this.SW.InsertKeywords(keyword, day, point);
-			if(this.NW != null)
+			if (this.NW != null)
 				this.NW.InsertKeywords(keyword, day, point);
-			if(this.NE != null)
+			if (this.NE != null)
 				this.NE.InsertKeywords(keyword, day, point);
-			if(this.SE != null)
+			if (this.SE != null)
 				this.SE.InsertKeywords(keyword, day, point);
 		}
 		/*
 		 * Else Case if the node has child we need to trace the place where the
 		 * point belong to
 		 */
-			
 
 	}
 
@@ -146,7 +147,7 @@ public class AQuadTree implements Serializable {
 			} else {
 				// Number of node exceed the capacity split and then reqrrange
 				// the Points
-				if (this.level < 16) {//16
+				if (this.level < 16) {// 16
 					this.split(p);
 					this.bucket.incrementtVersionCount(p.date, p.value);
 					this.hasChild = true;
@@ -174,6 +175,51 @@ public class AQuadTree implements Serializable {
 
 	}
 
+	/***
+	 * This is the fist step for the query
+	 * 
+	 * @param queryMBR
+	 * @param fromDate
+	 * @param toDate
+	 * @param mapLevel
+	 * @param keywords
+	 * @param values
+	 * @return
+	 * @throws Exception
+	 */
+	public ArrayList<PointQ> QueryExecuter(RectangleQ queryMBR,
+			String fromDate, String toDate, int mapLevel, String keywords,
+			ArrayList<PointQ> values) throws Exception {
+		int from = AQuadBucket.getDayYearNumber(fromDate);
+		int to = AQuadBucket.getDayYearNumber(toDate);
+		int swap; 
+		if(from > to){
+			swap = from; 
+			from = to; 
+			to = swap;
+		}
+		if (keywords == null || keywords.equals("")) {
+			this.get(queryMBR, from, to, mapLevel, keywords, values);
+		} else {
+			
+			List<PointQ> result = null;
+			for (int i = from; i <= to; i++) {
+				AQkeywords temp;
+				if (this.bucket.keywordsCount[i] == null || this.bucket.keywordsCount[i].contains(keywords) == false) {
+					result = DayIndex.searchKeyword(keywords, i);
+					if (result != null) {
+						for (PointQ p : result) {
+							this.InsertKeywords(keywords, i, p);
+						}
+					}
+				}
+			}
+			this.get(queryMBR, from, to, mapLevel, keywords, values);
+		}
+		return values;
+
+	}
+
 	/**
 	 * This method get the visualize buckets
 	 * 
@@ -182,17 +228,17 @@ public class AQuadTree implements Serializable {
 	 * @return
 	 * @throws Exception
 	 */
-	public ArrayList<PointQ> get(RectangleQ queryMBR, String fromDate,
-			String toDate, int mapLevel, String keywords,
+	public ArrayList<PointQ> get(RectangleQ queryMBR, int fromDate,
+			int toDate, int mapLevel, String keywords,
 			ArrayList<PointQ> values) throws Exception {
 		if (this.level == mapLevel && this.bucket != null) {
-//			System.out.println("Intersected MBR " + this.spaceMbr + " Level"
-//					+ this.level);
+			// System.out.println("Intersected MBR " + this.spaceMbr + " Level"
+			// + this.level);
 			PointQ p = this.spaceMbr.getCenterPoint();
 			if (keywords == null || keywords.equals("")) {
 				p.value = this.bucket.getVersionCount(fromDate, toDate);
 			} else {
-				
+
 				p.value = this.bucket.getKeywordCount(fromDate, toDate,
 						keywords, this);
 			}// end if there is a keywords
@@ -224,56 +270,59 @@ public class AQuadTree implements Serializable {
 		// }
 		return values;
 	}
-	
-	
+
 	/***
-	 * This method return all the leaves level of a quadrants. 
+	 * This method return all the leaves level of a quadrants.
+	 * 
 	 * @param point
 	 * @return
 	 */
-	public List<RectangleQ> getAllInteresectedLeafs(RectangleQ mbr, List<RectangleQ> interesectedLeaves){
-		RectangleQ result = null; 
-		if (!this.hasChild && this.bucket != null && this.spaceMbr.isIntersected(mbr)) {
+	public List<RectangleQ> getAllInteresectedLeafs(RectangleQ mbr,
+			List<RectangleQ> interesectedLeaves) {
+		RectangleQ result = null;
+		if (!this.hasChild && this.bucket != null
+				&& this.spaceMbr.isIntersected(mbr)) {
 			// found the maximum leaf node.
-//			if(this.bucket.getTotalCount() > 0){
-				interesectedLeaves.add(this.spaceMbr);
-//			}
+			// if(this.bucket.getTotalCount() > 0){
+			interesectedLeaves.add(this.spaceMbr);
+			// }
 		} else if (this.hasChild) {
 			if (this.NW != null) {
-				this.NW.getAllInteresectedLeafs(mbr,interesectedLeaves);
+				this.NW.getAllInteresectedLeafs(mbr, interesectedLeaves);
 			}
 			if (this.NE != null) {
-				 this.NE.getAllInteresectedLeafs(mbr,interesectedLeaves);
+				this.NE.getAllInteresectedLeafs(mbr, interesectedLeaves);
 			}
 			if (this.SE != null) {
-				 this.SE.getAllInteresectedLeafs(mbr,interesectedLeaves);
+				this.SE.getAllInteresectedLeafs(mbr, interesectedLeaves);
 			}
 			if (this.SW != null) {
-				 this.SW.getAllInteresectedLeafs(mbr,interesectedLeaves);
+				this.SW.getAllInteresectedLeafs(mbr, interesectedLeaves);
 			}
 		}
 		return interesectedLeaves;
 	}
-	
+
 	/**
 	 * This method will return exist rectangles with keyword value.
+	 * 
 	 * @param day
 	 * @param word
 	 * @param existMbrs
 	 * @return
 	 */
-	public ExistRectangls getCountFromChilds( int day,
-			String word, ExistRectangls existMbrs) {
+	public ExistRectangls getCountFromChilds(int day, String word,
+			ExistRectangls existMbrs) {
 
 		if (this.bucket.keywordsCount[day].getEntry(word) != null) {
 			existMbrs.count += this.bucket.keywordsCount[day].getEntry(word).count;
-			System.out.println("Children "+this.spaceMbr);
+			System.out.println("Children " + this.spaceMbr);
 			existMbrs.mbrs.add(this.spaceMbr);
 		}
 
 		if (this.SW != null && this.SW.bucket != null
 				&& this.SW.bucket.keywordsCount[day] != null) {
-			this.SW.getCountFromChilds( day, word, existMbrs);
+			this.SW.getCountFromChilds(day, word, existMbrs);
 		}
 		if (this.SE != null && this.SE.bucket != null
 				&& this.SE.bucket.keywordsCount[day] != null) {
@@ -281,11 +330,11 @@ public class AQuadTree implements Serializable {
 		}
 		if (this.NW != null && this.NW.bucket != null
 				&& this.NW.bucket.keywordsCount[day] != null) {
-			this.NW.getCountFromChilds( day, word, existMbrs);
+			this.NW.getCountFromChilds(day, word, existMbrs);
 		}
 		if (this.NE != null && this.NE.bucket != null
 				&& this.NE.bucket.keywordsCount[day] != null) {
-			this.NE.getCountFromChilds( day, word, existMbrs);
+			this.NE.getCountFromChilds(day, word, existMbrs);
 		}
 		return existMbrs;
 	}
@@ -339,15 +388,15 @@ public class AQuadTree implements Serializable {
 
 		}
 	}
-	
-	
-	private void printLeafNodesMBRS(AQuadTree node, OutputStreamWriter writer) throws IOException {
+
+	private void printLeafNodesMBRS(AQuadTree node, OutputStreamWriter writer)
+			throws IOException {
 		if (!node.hasChild) {
 			if (node.bucket != null) {
 				if (node.bucket.getTotalCount() > 0) {
-						writer.write(node.spaceMbr.x1 + "," + node.spaceMbr.y1
-								+ "," + node.spaceMbr.x2 + ","
-								+ node.spaceMbr.y2 + "\n");
+					writer.write(node.spaceMbr.x1 + "," + node.spaceMbr.y1
+							+ "," + node.spaceMbr.x2 + "," + node.spaceMbr.y2
+							+ "\n");
 				}
 			}
 		} else {
@@ -370,18 +419,20 @@ public class AQuadTree implements Serializable {
 		printLeafNodes(node.NE, writer, isWKT);
 		printLeafNodes(node.SE, writer, isWKT);
 	}
-	
+
 	/***
-	 * This method return the maximum leaf quadrant in the tree that contains
-	 * a given points. This method is used to build the inverted index for each quadrants. 
+	 * This method return the maximum leaf quadrant in the tree that contains a
+	 * given points. This method is used to build the inverted index for each
+	 * quadrants.
+	 * 
 	 * @param point
 	 * @return
 	 */
-	public RectangleQ getMaximumLeafNode(PointQ point){
-		RectangleQ result = null; 
+	public RectangleQ getMaximumLeafNode(PointQ point) {
+		RectangleQ result = null;
 		if (!this.hasChild && this.bucket != null) {
 			// found the maximum leaf node.
-			if(this.bucket.getTotalCount() > 0){
+			if (this.bucket.getTotalCount() > 0) {
 				result = this.spaceMbr;
 				return result;
 			}
@@ -401,9 +452,6 @@ public class AQuadTree implements Serializable {
 		}
 		return result;
 	}
-	
-	
-	
 
 	/**
 	 * This method remove statistics and keep the just the MBRs' boundary of the
@@ -515,8 +563,8 @@ public class AQuadTree implements Serializable {
 		// this.insert(1);
 		// }
 		OutputStreamWriter writer = new OutputStreamWriter(
-				new FileOutputStream(outputdir + "/AQuadtree_mbrsCounts.txt", false),
-				"UTF-8");
+				new FileOutputStream(outputdir + "/AQuadtree_mbrsCounts.txt",
+						false), "UTF-8");
 		// printAllNodes(this);
 		// writer.write("{");
 		printLeafNodes(this, writer, false);
@@ -525,7 +573,7 @@ public class AQuadTree implements Serializable {
 		// System.out.println("number of buckets in the leaves:"+counter+
 		// "estimated Size = "+((1.47*counter)/1024)+" MB");
 	}
-	
+
 	public void StoreLeafsQuadrantsOnly(String outputdir) throws IOException {
 		OutputStreamWriter writer = new OutputStreamWriter(
 				new FileOutputStream(outputdir + "/AQuadtree_mbrs.txt", false),

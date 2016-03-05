@@ -132,7 +132,9 @@ public class DayIndex {
 			reader = DirectoryReader.open(FSDirectory.open(new File(conf.invertedIndexDir
 					+ "/inverted/" + dayofYear)));
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			//e1.printStackTrace();
+			System.out.println("Inverted Index not found for this day: "+ conf.invertedIndexDir
+					+ "/inverted/" + dayofYear);
 			return null;
 		}
 		IndexSearcher searcher = new IndexSearcher(reader);

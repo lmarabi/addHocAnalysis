@@ -81,10 +81,11 @@ public class HomeServer extends AbstractHandler {
 			startTime = System.currentTimeMillis();
 			ArrayList<PointQ> result = new ArrayList<PointQ>();
 			// Check for the input to avoid any bugs. 
-			if (!startDate.matches("\\d{2}-\\d{2}-\\d{4}")) {
+			System.out.println(startDate);
+			if (!startDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
 			    startDate = "2015-01-01";
 			}
-			if (!endDate.matches("\\d{2}-\\d{2}-\\d{4}")) {
+			if (!endDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
 				endDate = "2015-01-01";
 			}
 			if(keyword.length() > 10){
@@ -99,7 +100,7 @@ public class HomeServer extends AbstractHandler {
 			
 			try {
 //				quadtree.get(queryMBR, startDate, endDate, Integer.parseInt(level), keyword, result);
-				quadtree.get(queryMBR, startDate, endDate, (Integer.parseInt(level)+1), keyword, result);
+				quadtree.QueryExecuter(queryMBR, startDate, endDate, (Integer.parseInt(level)+1), keyword, result);
 				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
