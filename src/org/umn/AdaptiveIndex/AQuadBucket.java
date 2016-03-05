@@ -14,7 +14,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
 
+import org.umn.index.PointQ;
 import org.umn.index.RectangleQ;
+import org.umn.keyword.DayIndex;
 import org.umn.keyword.InvertedIndex;
 import org.umn.keyword.LuceneInvertedIndex;
 
@@ -105,16 +107,16 @@ public class AQuadBucket implements Serializable {
 				node.getAllInteresectedLeafs(node.spaceMbr, leaves);
 				List<RectangleQ> leavesTobeRead = new ArrayList<RectangleQ>();
 				missedRectangles(leaves, exist.mbrs, leavesTobeRead);
-				HashMap<RectangleQ, Integer> keyvalue = LuceneInvertedIndex
-						.searchKeyword(word, i, leavesTobeRead);
+				List<PointQ> locations = DayIndex
+						.searchKeyword(word, i);
 				// update the sum of these recatngles to this buckets
-				Iterator<Entry<RectangleQ, Integer>> it = keyvalue.entrySet()
-						.iterator();
-				while (it.hasNext()) {
-					Map.Entry<RectangleQ, Integer> entry = it.next();
-					node.InsertKeywords(word, i, entry.getKey() ,entry.getValue());
-					result += entry.getValue();
+				for(PointQ point : locations){
+					node.InsertKeywords(word, i, point);
 				}
+				
+					
+					
+				
 			}
 
 		}
@@ -152,12 +154,12 @@ public class AQuadBucket implements Serializable {
 		return result;
 	}
 
-	public void setVersionKeywords(int day, String keyword, int count) throws ParseException {
+	public void setVersionKeywords(int day, String keyword) throws ParseException {
 		AQkeywords temp;
 		if ((temp = this.keywordsCount[day].getEntry(keyword)) == null) {
-			this.keywordsCount[day].add(new AQkeywords(keyword, count));
+			this.keywordsCount[day].add(new AQkeywords(keyword, 1));
 		} else {
-			AQkeywords newvalue = new AQkeywords(keyword, (temp.count + count));
+			AQkeywords newvalue = new AQkeywords(keyword, (temp.count + 1));
 			keywordsCount[day].updateAQKeywords(temp, newvalue);
 		}
 
