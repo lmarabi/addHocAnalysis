@@ -205,9 +205,11 @@ public class HomeServer extends AbstractHandler {
 	public static void main(String[] args) throws Exception {
 		Common conf = new Common();
 		conf.loadConfigFile();
+		long start = System.currentTimeMillis();
 		//buildQuadtree(conf.quadtreeinputFile,conf.quadtreeDir);
 		quadtree = new AQuadTree(new RectangleQ(-180, -60, 180, 70));
 		boolean loaded = quadtree.loadQuadToMemory(conf.quadtreeDir);
+		System.out.println("Building index took in ms: "+ (System.currentTimeMillis()-start));
 		if (loaded) {
 			System.out.println("loaded to memory successfully");
 //			quadtree.StoreRectanglesToArrayText(conf.quadtreeDir);
