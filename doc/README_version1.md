@@ -8,3 +8,9 @@ Spatial quadtree is a unbalanced quadtree, that divide the space into four quadr
 
 **Promosis for the first version** 
 The first version will cover the entire 2015 twitter dataset. 
+
+
+**Branches in the git repository**
+levesLevel: Only quadtree leves contains the inverted index, The base line implementation From C.Ynsin paper. 
+newIdea: The keyword search is materialized based on a temporal keyword inverted index on the disk. 
+
