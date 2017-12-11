@@ -211,7 +211,10 @@ public class DayIndex {
 //		DayIndex.buildIndex(
 //				"/export/scratch/louai/scratch1/workspace/dataset/addHoc/dataset/demokeywordDay/part-00000",
 //				"/export/scratch/louai/scratch1/workspace/dataset/addHoc/dataset/demokeywordDay/");
-		DayIndex.searchKeyword("I'm",0);
+		//DayIndex.searchKeyword("I'm",0);
+		Common conf = new Common(); 
+		conf.loadConfigFile();
+		DayIndex.buildIndex(conf.invertedIndexinputFile, conf.invertedIndexDir);
 
 	}
 

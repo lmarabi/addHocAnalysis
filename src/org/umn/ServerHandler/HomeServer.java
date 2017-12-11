@@ -98,6 +98,7 @@ public class HomeServer extends AbstractHandler {
 			System.out.println("Query mbr:"+queryMBR.toString()+" from:"+startDate+" to: "+endDate+" Level:"
 			+level+" Keyword:"+ keyword);
 			
+			
 			try {
 //				quadtree.get(queryMBR, startDate, endDate, Integer.parseInt(level), keyword, result);
 				quadtree.QueryExecuter(queryMBR, startDate, endDate, (Integer.parseInt(level)+1), keyword, result);
@@ -108,7 +109,9 @@ public class HomeServer extends AbstractHandler {
 			}
 			endTime = System.currentTimeMillis() - startTime;
 			System.out.println("Result size = " + result.size()+" Execution time "+ (endTime));
-			
+			this.outputWriter.write(minLong+","+minLat+","+maxLong+","+maxLat+","+startDate+","+endDate+","
+			+level+","+ keyword+","+result.size()+","+endTime+"\n");
+
 			JsonWriter writer = new JsonWriter(new OutputStreamWriter(
 					new GZIPOutputStream(response.getOutputStream()),
 					"UTF-8"));
@@ -199,28 +202,38 @@ public class HomeServer extends AbstractHandler {
 				}
 		}
 		System.out.println("Building index took in ms: "+ (System.currentTimeMillis()-starttime));
-//		quadtree.StoreRectanglesWKT(outputdir);
+		System.out.println("Save quadtree to disk ");
+		quadtree.storeQuadToDisk(outputdir);
+		System.out.println("Store wkt ");
+		quadtree.StoreRectanglesWKT(outputdir);
+		
+		
 	}
 
 	public static void main(String[] args) throws Exception {
 		Common conf = new Common();
 		conf.loadConfigFile();
 		long start = System.currentTimeMillis();
-		//buildQuadtree(conf.quadtreeinputFile,conf.quadtreeDir);
-		quadtree = new AQuadTree(new RectangleQ(-180, -60, 180, 70));
-		boolean loaded = quadtree.loadQuadToMemory(conf.quadtreeDir);
+		File file = new File(conf.quadtreeDir+"/AQuadtree.dat");
+		boolean loaded = false;
+		if(file.exists()){
+			quadtree = new AQuadTree(new RectangleQ(-180, -60, 180, 70));
+			loaded = quadtree.loadQuadToMemory(conf.quadtreeDir);	
+		}else{
+			buildQuadtree(conf.quadtreeinputFile,conf.quadtreeDir);
+			loaded = true; 
+			
+		}
+		
 		System.out.println("Building index took in ms: "+ (System.currentTimeMillis()-start));
 		if (loaded) {
 			System.out.println("loaded to memory successfully");
-//			quadtree.StoreRectanglesToArrayText(conf.quadtreeDir);
-//			System.out.println("Store mbrs successfully");
-//			quadtree.StoreRectanglesWKT(conf.quadtreeDir);
-//			System.out.println("Store wkt successfully");
 		} else {
 			System.out.println("Could not load to memory");
 		}
 		System.out.println("Done successfully");
-		Server server = new Server(8095);
+		Server server = new Server(8000);// Alkhwarizmi - server.
+//		Server server = new Server(8095);
 		server.setHandler(new HomeServer());
 		server.start();
 		server.join();

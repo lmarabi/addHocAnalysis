@@ -1,0 +1,47 @@
+  8         <property name="docs.dir" location="docs" />
+  9         <property name="lib.dir" location="lib" />
+ 10         <property name="bin.dir" location="bin" />
+ 11         <property name="version" value="1" />
+ 12         <property name="ant.build.javac.source" value="1.7" />
+ 13         <property name="ant.build.javac.target" value="1.7" />
+ 14         <!--
+ 15         <property name="main.class" value="org.umn.AdaptiveIndex.MainAQtree" />
+ 16
+ 17         -->
+ 18         <property name="main.class" value="org.umn.ServerHandler.HomeServer" />
+ 19
+ 20
+ 21
+ 22         <!--
+ 23             Create a classpath container which can be later used in the ant task
+ 24           -->
+ 25         <path id="build.classpath">
+ 26                 <fileset dir="${lib.dir}">
+ 27                         <include name="*.jar" />
+ 28                 </fileset>
+ 29         </path>
+ 30
+ 31         <!-- Deletes the existing build, docs and dist directory-->
+ 32         <target name="clean">
+ 33                 <delete dir="${build.dir}" />
+ 34                 <delete dir="${bin.dir}" />
+ 35                 <delete dir="${dist.dir}" />
+ 36                 <delete dir="${bin.dir}" />
+ 37         </target>
+ 38
+ 39         <!-- Creates the  build, docs and dist directory-->
+ 40         <target name="makedir">
+ 41                 <mkdir dir="${build.dir}" />
+ 42                 <mkdir dir="${dist.dir}" />
+ 43                 <mkdir dir="${bin.dir}" />
+ 44         </target>
+ 45
+build.xml                                                                                                                                 1,1            Top
+louai@cs-alghazali (/export/scratch/louai/scratch1/workspace/antProject/addHocAnalysis) % ls
+bin/  build.xml*  dist/  doc/  figures/  lib/  ReadME.txt  src/  test  website/
+louai@cs-alghazali (/export/scratch/louai/scratch1/workspace/antProject/addHocAnalysis) % cd dist/
+louai@cs-alghazali (/export/scratch/louai/scratch1/workspace/antProject/addHocAnalysis/dist) % ls
+addHoc-1.jar  addHoc-1-withlib.jar
+louai@cs-alghazali (/export/scratch/louai/scratch1/workspace/antProject/addHocAnalysis/dist) % scp add
+addHoc-1.jar          addHoc-1-withlib.jar
+louai@cs-alghazali (/export/scratch/louai/scratch1/workspace/antProject/addHocAnalysis/dist) % scp addHoc-1-withlib.jar mokble@ibn-battuta-umh.cs.umn.edu:/

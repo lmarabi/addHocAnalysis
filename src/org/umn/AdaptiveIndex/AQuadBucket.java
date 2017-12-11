@@ -3,22 +3,11 @@ package org.umn.AdaptiveIndex;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
-//import java.util.HashMap;
-
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.PriorityQueue;
 
-import org.umn.index.PointQ;
 import org.umn.index.RectangleQ;
-import org.umn.keyword.DayIndex;
-import org.umn.keyword.InvertedIndex;
-import org.umn.keyword.LuceneInvertedIndex;
+//import java.util.HashMap;
 
 public class AQuadBucket implements Serializable {
 	// Hash keywords
